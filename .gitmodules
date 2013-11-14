@@ -1,0 +1,3 @@
+[submodule "lib/node-mime"]
+	path = lib/node-mime
+	url = https://github.com/broofa/node-mime.git

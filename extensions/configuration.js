@@ -9,11 +9,9 @@
 /// http://nodeexamples.com/2012/09/28/getting-a-directory-listing-using-the-fs-module-in-node-js/
 ///
 
-var conf = require("../conf/directory-index.conf.js"),
-	fs = require("fs"),
-	path = require("path");
-
-// exports.IGNORE = /^\./;
+var fs = require("fs"),
+	path = require("path"),
+	conf = require("../conf/directory-index.conf.js");
 
 exports.getDirectory = function(p, funIn) {
 	p = path.normalize(p);
@@ -38,6 +36,7 @@ exports.getDirectory = function(p, funIn) {
 		funIn(arrFiles);
 	});
 };
+
 exports.getFileInfo = function(file) {
 	var objStats = fs.statSync(file),
 		objFile = {
