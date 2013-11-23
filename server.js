@@ -34,6 +34,10 @@ http.createServer(function(request, response) {
 		else if ( typeof strContent !== "string") {
 			objOptions["Content-Type"] = "application/json";
 			strContent = JSON.stringify(strContent);
+			if (objUrl.query["callback"]) {
+				objOptions["Content-Type"] = "application/javascript";
+				strContent = objUrl.query["callback"] + "(" + strContent + ");";
+			}
 		}
 		response.writeHead(intStatus, objOptions);
 		response.write(strContent, "binary");
