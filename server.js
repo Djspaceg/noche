@@ -33,7 +33,7 @@ http.createServer(function(request, response) {
 		if (strContent === undefined) strContent = "";
 		else if ( typeof strContent !== "string") {
 			objOptions["Content-Type"] = "application/json";
-			strContent = JSON.stringify(strContent);
+			strContent = JSON.stringify({"filesystem": strContent});
 			if (objUrl.query["callback"]) {
 				objOptions["Content-Type"] = "application/javascript";
 				strContent = objUrl.query["callback"] + "(" + strContent + ");";
@@ -75,9 +75,9 @@ http.createServer(function(request, response) {
 					// console.log("di.Format", di.Format);
 					di.Format = (objUrl.query["f"] === "json" || objUrl.query["f"] === "html") ? objUrl.query["f"] : "";
 					// console.log("di.Format", di.Format);
-					var directoryIndex = di.getDirectory(filename, function(arrFiles) {
-						// console.log("filename", filename, "directoryIndex", arrFiles);
-						writeEntireResponse(arrFiles);						
+					var directoryIndex = di.getDirectory(filename, function(objFiles) {
+						// console.log("filename", filename, "directoryIndex", objFiles);
+						writeEntireResponse(objFiles);
 					});
 				}
 			})

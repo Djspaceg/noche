@@ -64,23 +64,31 @@ exports.getDirectory = function(p, funIn) {
 			arrFiles = strOut;
 		}
 		// console.log("arrFiles: ", arrFiles);
-		funIn(arrFiles);
+		var strPath = exports.trimDocumentRoot(p);
+		var objDirectory = {
+			path: exports.trimDocumentRoot(p),
+			name: (strPath === "/") ? strPath : path.basename(strPath),
+			contents: arrFiles
+		};
+		funIn(objDirectory);
 	});
 };
 
 exports.get = function(strProp) {
 	return exports[strProp] || conf[strProp];
 };
-
+exports.trimDocumentRoot = function(strPath) {
+	var strDocRootRxRdy = serverconf.DocumentRoot.replace(/\//, "\/"),
+		re = new RegExp("^"+strDocRootRxRdy);
+	return strPath.replace(re, "");
+};
 exports.getFileInfo = function(file) {
 	var objStats = fs.statSync(file),
-		strDocRootRxRdy = serverconf.DocumentRoot.replace(/\//, "\/"),
-		re = new RegExp("^"+strDocRootRxRdy),
 		objFile = {
 			name: path.basename(file),
 			size: objStats.size,
 			mtime: objStats.mtime,
-			path: file.replace(re, "") + (objStats.isDirectory() ? "/" : ""),
+			path: exports.trimDocumentRoot(file) + (objStats.isDirectory() ? "/" : ""),
 			ext: path.extname(file).replace(/^\./, ""),
 			isDir: objStats.isDirectory()
 	};
