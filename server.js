@@ -33,7 +33,7 @@ http.createServer(function(request, response) {
 		if (strContent === undefined) strContent = "";
 		else if ( typeof strContent !== "string") {
 			objOptions["Content-Type"] = "application/json";
-			strContent = JSON.stringify({"filesystem": strContent});
+			strContent = JSON.stringify({"filesystem": [strContent]});
 			if (objUrl.query["callback"]) {
 				objOptions["Content-Type"] = "application/javascript";
 				strContent = objUrl.query["callback"] + "(" + strContent + ");";
