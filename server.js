@@ -3,7 +3,8 @@
 // Based on rpflorence's Gist @ https://gist.github.com/rpflorence/701407
 // 
 
-var http = require("http"),
+var util = require("util"),
+	http = require("http"),
 	url  = require("url"),
 	path = require("path"),
 	fs   = require("fs"),
@@ -88,4 +89,6 @@ http.createServer(function(request, response) {
 	});
 }).listen(parseInt(conf.Listen, 10));
 
-console.log(" ## Noche server running ##\n  => http://localhost:" + conf.Listen + "/\n [CTRL] + [C] to shutdown");
+// console.log(" ## Noche server running ##\n  => http://localhost:" + conf.Listen + "/\n [CTRL] + [C] to shutdown");
+/* server started */  
+util.puts(" ## Noche server running ####################################################\n  => http://localhost:" + conf.Listen + "/");

@@ -33,16 +33,18 @@ exports.getDirectory = function(p, funIn) {
 		}
 
 		// console.log("Root Ccceck comparison: ",p, serverconf.DocumentRoot);
-		if (p != serverconf.DocumentRoot + "/") {
-			// var objFile = exports.getFileInfo(p);
-			// objFile.name = "Parent Directory";
+		if (p != serverconf.DocumentRoot + "/" && (
+				(exports.get("Format") === "json" && exports.get("IncludeParentDirJson"))
+				||
+				(exports.get("Format") === "html" && exports.get("IncludeParentDirHtml"))
+			)) {
 			files.unshift("..");
 		}
 		strOut+= '<table class="directory-indexing">';
 		files.map(function (file) {
 			return path.join(p, file);
 		}).filter(function (file) {
-			return !(path.basename(file).match(conf.Ignore));
+			return !(path.basename(file).match(exports.get("Ignore")));
 		// }).filter(function (file) {
 		// 	return fs.statSync(file).isFile();
 		}).forEach(function (file) {
@@ -89,7 +91,7 @@ exports.getFileInfo = function(file) {
 			size: objStats.size,
 			mtime: objStats.mtime,
 			path: exports.trimDocumentRoot(file) + (objStats.isDirectory() ? "/" : ""),
-			ext: path.extname(file).replace(/^\./, ""),
+			ext: objStats.isDirectory() ? "folder" : path.extname(file).replace(/^\./, ""),
 			isDir: objStats.isDirectory()
 	};
 	// var strDocRootRxRdy = serverconf.DocumentRoot.replace(/\//, "\/");
