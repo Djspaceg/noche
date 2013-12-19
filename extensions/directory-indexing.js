@@ -63,7 +63,9 @@ exports.getDirectory = function(p, funIn) {
 
 		if (exports.get("Format") === "html") {
 			strOut+= '</table>';
-			arrFiles = strOut;
+			// arrFiles = strOut;
+			funIn(strOut);
+			return;
 		}
 		// console.log("arrFiles: ", arrFiles);
 		var strPath = exports.trimDocumentRoot(p);
@@ -114,7 +116,7 @@ exports.getFileInfo = function(file) {
 
 var buildHtmlRow = function(objFile) {
 	var strOut = '<tr>';
-	strOut+= '<td class="file-name"><a href="'+ objFile.path +'">'+ objFile.name + (objFile.isDir ? "/" : "") +'</a></td>';
+	strOut+= '<td class="file-name"><a href="'+ encodeURI(objFile.path) +'">'+ objFile.name + (objFile.isDir ? "/" : "") +'</a></td>';
 	strOut+= '<td class="file-size">'+ objFile.size +'</td>';
 	strOut+= '<td class="file-date">'+ objFile.mtime.toIsoTimeString() +'</td>';
 	strOut+= '</tr>';

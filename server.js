@@ -19,7 +19,7 @@ var util = require("util"),
 
 http.createServer(function(request, response) {
 	var objUrl = url.parse(request.url, true),
-		uri = path.normalize(objUrl.pathname),
+		uri = decodeURI(path.normalize(objUrl.pathname)),
 		filename = path.join(conf.DocumentRoot, uri);
 	// process.cwd()
 
