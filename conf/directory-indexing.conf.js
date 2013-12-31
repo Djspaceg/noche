@@ -21,3 +21,9 @@ exports.IncludeParentDirHtml = true;
 // Note: These files are automatically excluded from all directory indexes.
 exports.HeaderFilename = "/HEADER.html";
 exports.FooterFilename = "/FOOTER.html";
+
+// Enable/disable media metadata checking and display.
+exports.MediaMetadata = true;
+// Check for a file in the media directory with the following extension
+// to determine if said directory contains media info.
+exports.MediaMetadataThumbnailExtension = ".tbn";

@@ -26,7 +26,33 @@ var fs = require("fs"),
 	conf = require("../conf/directory-indexing.conf.js");
 
 exports.hasIndex = function(filename) {
-	return fs.existsSync(filename + "/" + serverconf.DirectoryIndex) ? filename + "/" + serverconf.DirectoryIndex : false;
+	return fs.existsSync(filename + "/" + exports.get("DirectoryIndex")) ? exports.get("DirectoryIndex") : false;
+};
+
+exports.hasMedia = function(filename) {
+	var strBasename = path.basename(filename),
+		strThumbnailName = strBasename + exports.get("MediaMetadataThumbnailExtension");
+
+	// Exact match name
+	if ( fs.existsSync(filename + "/" + strThumbnailName) ) {
+		return strThumbnailName;
+	}
+	// Article at the beginning of the title
+	if ( strBasename.match(/^\s*The\s/i) ) {
+		strThumbnailName = strBasename.replace(/^\s*(The)\s(.*)\s*(\(.*\))\s*$/i, "$2, $1 $3") + exports.get("MediaMetadataThumbnailExtension");
+		if ( fs.existsSync(filename + "/" + strThumbnailName) ) {
+			return strThumbnailName;
+		}
+	}
+	// Article at the end of the title
+	if ( strBasename.match(/,\s*The\s+\(/i) ) {
+		strThumbnailName = strBasename.replace(/^\s*(.*),\s*(The)\s*(\(.*\))\s*$/i, "$2 $1 $3") + exports.get("MediaMetadataThumbnailExtension");
+		if ( fs.existsSync(filename + "/" + strThumbnailName) ) {
+			return strThumbnailName;
+		}
+	}
+	// No variations found...
+	return false;
 };
 
 exports.getDirectory = function(p, funIn) {
@@ -90,7 +116,7 @@ exports.getDirectory = function(p, funIn) {
 };
 
 exports.get = function(strProp) {
-	return exports[strProp] || conf[strProp];
+	return exports[strProp] || conf[strProp] || serverconf[strProp];
 };
 exports.trimDocumentRoot = function(strPath) {
 	var strDocRootRxRdy = serverconf.DocumentRoot.replace(/\//, "\/"),
@@ -106,7 +132,8 @@ exports.getFileInfo = function(file) {
 			path: exports.trimDocumentRoot(file) + (objStats.isDirectory() ? "/" : ""),
 			ext: objStats.isDirectory() ? "folder" : path.extname(file).replace(/^\./, ""),
 			isDir: objStats.isDirectory(),
-			hasIndex: exports.hasIndex(file) ? serverconf.DirectoryIndex : false
+			hasIndex: exports.hasIndex(file),
+			hasMedia: exports.hasMedia(file)
 	};
 	if (objFile.path == "") {
 		objFile.path = "/";
@@ -131,7 +158,7 @@ exports.getFile = function(strPath, strCurrentDirectory) {
 
 var buildHtmlRow = function(objFile) {
 	var strOut = '<tr>';
-	strOut+= '<td class="file-name"><a href="'+ encodeURI(objFile.path) +'">'+ objFile.name + (objFile.isDir ? "/" + (objFile.hasIndex ? serverconf.DirectoryIndex : "") : "") +'</a></td>';
+	strOut+= '<td class="file-name"><a href="'+ encodeURI(objFile.path) +'">'+ objFile.name + (objFile.isDir ? "/" + (objFile.hasIndex ? exports.get("DirectoryIndex") : "") : "") +'</a></td>';
 	strOut+= '<td class="file-size">'+ objFile.size +'</td>';
 	strOut+= '<td class="file-date">'+ objFile.mtime.toIsoTimeString() +'</td>';
 	strOut+= '</tr>';
