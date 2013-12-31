@@ -59,34 +59,46 @@ http.createServer(function(request, response) {
 		return true;
 	};
 
-	fs.exists(filename, function(exists) {
-		if (!exists) {
-			writeEntireResponse(404, "404 Not Found\n"+uri, {"Content-Type": "text/plain"});
-			return;
+	var isServable = function(filename) {
+		var fileExists = fs.existsSync(filename);
+		if (!fileExists) {
+			return false;
 		}
 		var objFileInfo = fs.statSync(filename);
 		if (objFileInfo.isDirectory()) {
-			filename+= "/";
-			fs.exists(filename + conf.DirectoryIndex, function(indexExists) {
-				if (indexExists) {
-					// filename += "/" + conf.DirectoryIndex;
-					serveFile(filename + conf.DirectoryIndex);
-				}
-				else {
-					// console.log("di.Format", di.Format);
-					di.Format = (objUrl.query["f"] === "json" || objUrl.query["f"] === "html") ? objUrl.query["f"] : "";
-					// console.log("di.Format", di.Format);
-					var directoryIndex = di.getDirectory(filename, function(objFiles) {
-						// console.log("filename", filename, "directoryIndex", objFiles);
-						writeEntireResponse(objFiles);
-					});
-				}
-			})
+			return "maybe";
+		}
+		return true;
+	};
+	// var hasIndex = function(filename) {
+	// 	return fs.existsSync(filename + "/" + conf.DirectoryIndex) ? filename + "/" + conf.DirectoryIndex : false;
+	// };
+
+	var bitIsServable = isServable(filename);
+	if (bitIsServable) {
+		if (bitIsServable === "maybe") {
+			var bitHasIndex = di.hasIndex(filename);
+			if (bitHasIndex) {
+				serveFile(bitHasIndex);
+			}
+			else {
+				// console.log("di.Format", di.Format);
+				di.Format = (objUrl.query["f"] === "json" || objUrl.query["f"] === "html") ? objUrl.query["f"] : "";
+				// console.log("di.Format", di.Format);
+				var directoryIndex = di.getDirectory(filename, function(objFiles) {
+					// console.log("filename", filename, "directoryIndex", objFiles);
+					writeEntireResponse(objFiles);
+				});
+			}
 		}
 		else {
 			serveFile(filename);
 		}
-	});
+	}
+	else {
+		writeEntireResponse(404, "404 Not Found\n"+uri, {"Content-Type": "text/plain"});
+	}
+	return;
 }).listen(parseInt(conf.Listen, 10));
 
 // console.log(" ## Noche server running ##\n  => http://localhost:" + conf.Listen + "/\n [CTRL] + [C] to shutdown");

@@ -11,6 +11,8 @@
 
 /// Date.prototype.toIsoTimeString by: o-o from:
 /// http://stackoverflow.com/questions/3066586/get-string-in-yyyymmdd-format-from-js-date-object
+/// 
+
 Date.prototype.toIsoTimeString = function() {
 	var strY = this.getFullYear().toString();
 	var strM = (this.getMonth()+1).toString();
@@ -23,6 +25,10 @@ var fs = require("fs"),
 	serverconf = require("../conf/server.conf.js"),
 	conf = require("../conf/directory-indexing.conf.js");
 
+exports.hasIndex = function(filename) {
+	return fs.existsSync(filename + "/" + serverconf.DirectoryIndex) ? filename + "/" + serverconf.DirectoryIndex : false;
+};
+
 exports.getDirectory = function(p, funIn) {
 	p = path.normalize(p);
 	fs.readdir(p, function (err, files) {
@@ -30,6 +36,11 @@ exports.getDirectory = function(p, funIn) {
 			strOut = "";
 		if (err) {
 			throw err;
+		}
+
+		if (exports.get("Format") === "html") {
+			strOut+= exports.getFile( exports.get("HeaderFilename") );
+			strOut+= '<table class="directory-indexing">';
 		}
 
 		// console.log("Root Ccceck comparison: ",p, serverconf.DocumentRoot);
@@ -40,13 +51,12 @@ exports.getDirectory = function(p, funIn) {
 			)) {
 			files.unshift("..");
 		}
-		strOut+= '<table class="directory-indexing">';
 		files.map(function (file) {
 			return path.join(p, file);
 		}).filter(function (file) {
+			if (exports.get("HeaderFilename") && path.basename(file) == exports.get("HeaderFilename")) return false;
+			if (exports.get("FooterFilename") && path.basename(file) == exports.get("FooterFilename")) return false;
 			return !(path.basename(file).match(exports.get("Ignore")));
-		// }).filter(function (file) {
-		// 	return fs.statSync(file).isFile();
 		}).forEach(function (file) {
 			// console.log("- file: ", file, "- p:", p);
 			var objFile = exports.getFileInfo(file);
@@ -63,11 +73,12 @@ exports.getDirectory = function(p, funIn) {
 
 		if (exports.get("Format") === "html") {
 			strOut+= '</table>';
-			// arrFiles = strOut;
+			strOut+= exports.getFile( exports.get("FooterFilename") );
 			funIn(strOut);
 			return;
 		}
-		// console.log("arrFiles: ", arrFiles);
+
+		// Wrap up what we gathered into a neat little package.
 		var strPath = exports.trimDocumentRoot(p);
 		var objDirectory = {
 			path: exports.trimDocumentRoot(p),
@@ -94,29 +105,33 @@ exports.getFileInfo = function(file) {
 			mtime: objStats.mtime,
 			path: exports.trimDocumentRoot(file) + (objStats.isDirectory() ? "/" : ""),
 			ext: objStats.isDirectory() ? "folder" : path.extname(file).replace(/^\./, ""),
-			isDir: objStats.isDirectory()
+			isDir: objStats.isDirectory(),
+			hasIndex: exports.hasIndex(file) ? serverconf.DirectoryIndex : false
 	};
-	// var strDocRootRxRdy = serverconf.DocumentRoot.replace(/\//, "\/");
-	// var re = new RegExp("^"+strDocRootRxRdy);
-	// if (arrFiles instanceof Array) {
-	// 	arrFiles = arrFiles.map(function (file) {
-			// objFile.path = objFile.path.replace(re, "");
-			// file.path = file.path.replace("/^" + conf.DocumentRoot + "/", "");
-			// console.log("file.path", file.path);
-	// 		return file;
-	// 	});
-	// }
-	// if (file.match(/\.\.$/)) {
-	// }
 	if (objFile.path == "") {
 		objFile.path = "/";
 	}
 	return objFile;
 };
+exports.getFile = function(strPath, strCurrentDirectory) {
+	var strOut = "",
+		strCurrentDirectory = strCurrentDirectory || "";
+	if (strPath) {
+		var fileFullPath = strCurrentDirectory + strPath;
+		if (strPath.match(/^\//)) {
+			// Our file is on the root level
+			fileFullPath = serverconf.DocumentRoot + strPath;
+		}
+		if (fs.existsSync( fileFullPath )) {
+			strOut+= fs.readFileSync( fileFullPath );
+		}
+	}
+	return strOut;	
+};
 
 var buildHtmlRow = function(objFile) {
 	var strOut = '<tr>';
-	strOut+= '<td class="file-name"><a href="'+ encodeURI(objFile.path) +'">'+ objFile.name + (objFile.isDir ? "/" : "") +'</a></td>';
+	strOut+= '<td class="file-name"><a href="'+ encodeURI(objFile.path) +'">'+ objFile.name + (objFile.isDir ? "/" + (objFile.hasIndex ? serverconf.DirectoryIndex : "") : "") +'</a></td>';
 	strOut+= '<td class="file-size">'+ objFile.size +'</td>';
 	strOut+= '<td class="file-date">'+ objFile.mtime.toIsoTimeString() +'</td>';
 	strOut+= '</tr>';
