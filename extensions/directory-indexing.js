@@ -24,6 +24,10 @@ var fs = require("fs"),
 	path = require("path"),
 	serverconf = require("../conf/server.conf.js"),
 	conf = require("../conf/directory-indexing.conf.js");
+	
+exports.get = function(strProp) {
+	return exports[strProp] || conf[strProp] || serverconf[strProp];
+};
 
 exports.hasIndex = function(filename) {
 	return fs.existsSync(filename + "/" + exports.get("DirectoryIndex")) ? exports.get("DirectoryIndex") : false;
@@ -52,6 +56,7 @@ exports.hasMedia = function(filename) {
 		}
 	}
 	// No variations found...
+	// return "NONE FOUND: " + strThumbnailName;
 	return false;
 };
 
@@ -107,17 +112,15 @@ exports.getDirectory = function(p, funIn) {
 		// Wrap up what we gathered into a neat little package.
 		var strPath = exports.trimDocumentRoot(p);
 		var objDirectory = {
-			path: exports.trimDocumentRoot(p),
+			path: strPath,
 			name: (strPath === "/") ? strPath : path.basename(strPath),
+			hasMedia: exports.hasMedia(p),
 			contents: arrFiles
 		};
 		funIn(objDirectory);
 	});
 };
 
-exports.get = function(strProp) {
-	return exports[strProp] || conf[strProp] || serverconf[strProp];
-};
 exports.trimDocumentRoot = function(strPath) {
 	var strDocRootRxRdy = serverconf.DocumentRoot.replace(/\//, "\/"),
 		re = new RegExp("^"+strDocRootRxRdy);
