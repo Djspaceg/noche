@@ -11,7 +11,8 @@ var util = require("util"),
 	conf = require("./conf/server.conf.js"),
 	di   = require("./extensions/directory-indexing.js"),
 	x2j  = require("./extensions/xml2json.js"),
-	mime = require("./lib/node-mime/mime.js"),
+	// mime = require("./lib/node-mime/mime.js"),
+	mime = require("mime"),
 	port = process.argv[2] || 8888;
 
 // The base level of the server, nothing allowed below this.
@@ -87,7 +88,7 @@ http.createServer(function(request, response) {
 				di.Format = (objUrl.query["f"] === "json" || objUrl.query["f"] === "html") ? objUrl.query["f"] : "";
 				// console.log("di.Format", di.Format);
 				var directoryIndex = di.getDirectory(filename, function(objFiles) {
-					console.log("filename", filename, "directoryIndex", typeof strContent);
+					// util.puts("filename", filename);
 					if ( typeof objFiles !== "string") {
 						writeEntireResponse({"filesystem": [objFiles]});
 					}
@@ -99,6 +100,7 @@ http.createServer(function(request, response) {
 		}
 		else {
 			if (x2j.get("Enabled") && objUrl.query["f"] === "json" ) {
+				// util.puts("Attempting to convert "+ filename +" to Json.");
 				x2j.convertToJson(filename, function(json) {
 					writeEntireResponse(json);
 				});

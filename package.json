@@ -1,0 +1,15 @@
+{
+  "name": "noche",
+  "description": "An apache-style configuration web server written in node",
+  "version": "0.1",
+  "dependencies": {
+    "https://npmjs.org/package/node-mime": "",
+    "https://npmjs.org/package/xml2js": ""
+  },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/Djspaceg/noche.git"
+    }
+  ]
+}
