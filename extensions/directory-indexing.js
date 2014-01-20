@@ -35,25 +35,27 @@ exports.hasIndex = function(filename) {
 
 exports.hasMedia = function(filename) {
 	var strBasename = path.basename(filename),
-		arrThumbnailNames = (exports.get("MediaMetadataThumbnailExtension") instanceof Array) ? exports.get("MediaMetadataThumbnailExtension") : [exports.get("MediaMetadataThumbnailExtension")];
-	
-	for (var i = 0; i < arrThumbnailNames.length; i++) {
-		var strThumbnailName = strBasename + arrThumbnailNames[i];
+		arrThumbnailNames = (exports.get("MediaMetadataThumbnailExtension") instanceof Array) ? exports.get("MediaMetadataThumbnailExtension") : [exports.get("MediaMetadataThumbnailExtension")],
+		strThumbnailExt = "",
+		strThumbnailName = "";
 
+	for (var i = 0; i < arrThumbnailNames.length; i++) {
+		strThumbnailExt = arrThumbnailNames[i];
+		strThumbnailName = strBasename + strThumbnailExt;
 		// Exact match name
 		if ( fs.existsSync(filename + "/" + strThumbnailName) ) {
 			return strThumbnailName;
 		}
 		// Article at the beginning of the title
 		if ( strBasename.match(/^\s*The\s/i) ) {
-			strThumbnailName = strBasename.replace(/^\s*(The)\s(.*)\s*(\(.*\))\s*$/i, "$2, $1 $3") + exports.get("MediaMetadataThumbnailExtension");
+			strThumbnailName = strBasename.replace(/^\s*(The)\s(.*)\s*(\(.*\))\s*$/i, "$2, $1 $3") + strThumbnailExt;
 			if ( fs.existsSync(filename + "/" + strThumbnailName) ) {
 				return strThumbnailName;
 			}
 		}
 		// Article at the end of the title
 		if ( strBasename.match(/,\s*The\s+\(/i) ) {
-			strThumbnailName = strBasename.replace(/^\s*(.*),\s*(The)\s*(\(.*\))\s*$/i, "$2 $1 $3") + exports.get("MediaMetadataThumbnailExtension");
+			strThumbnailName = strBasename.replace(/^\s*(.*),\s*(The)\s*(\(.*\))\s*$/i, "$2 $1 $3") + strThumbnailExt;
 			if ( fs.existsSync(filename + "/" + strThumbnailName) ) {
 				return strThumbnailName;
 			}
