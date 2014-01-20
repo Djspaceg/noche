@@ -11,7 +11,6 @@ var util = require("util"),
 	conf = require("./conf/server.conf.js"),
 	di   = require("./extensions/directory-indexing.js"),
 	x2j  = require("./extensions/xml2json.js"),
-	// mime = require("./lib/node-mime/mime.js"),
 	mime = require("mime"),
 	port = process.argv[2] || 8888;
 

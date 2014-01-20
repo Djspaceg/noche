@@ -26,4 +26,5 @@ exports.FooterFilename = "/FOOTER.html";
 exports.MediaMetadata = true;
 // Check for a file in the media directory with the following extension
 // to determine if said directory contains media info.
-exports.MediaMetadataThumbnailExtension = ".tbn";
+// exports.MediaMetadataThumbnailExtension = ".tbn";
+exports.MediaMetadataThumbnailExtension = [".tbn", "-poster.jpg"];
