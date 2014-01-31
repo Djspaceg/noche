@@ -11,12 +11,7 @@ var util = require("util"),
 	conf = require("./conf/server.conf.js"),
 	di   = require("./extensions/directory-indexing.js"),
 	x2j  = require("./extensions/xml2json.js"),
-	mime = require("mime"),
-	port = process.argv[2] || 8888;
-
-// The base level of the server, nothing allowed below this.
-// Do not end this in a "/". If you want the server's root, set this to empty-string: ""
-// http.DOCUMENT_ROOT = "/Users/blake/Source";
+	mime = require("mime");
 
 http.createServer(function(request, response) {
 	var objUrl = url.parse(request.url, true),
@@ -31,8 +26,12 @@ http.createServer(function(request, response) {
 			strContent = arguments[0];
 			intStatus = 200;
 		}
-		if (!objOptions) objOptions = {"Content-Type": conf.DefaultContentType};
-		if (strContent === undefined) strContent = "";
+		if (!objOptions) {
+			objOptions = {"Content-Type": conf.DefaultContentType};
+		}
+		if (strContent === undefined) {
+			strContent = "";
+		}
 		else if ( typeof strContent !== "string") {
 			objOptions["Content-Type"] = "application/json";
 			strContent = JSON.stringify(strContent);
@@ -43,19 +42,21 @@ http.createServer(function(request, response) {
 		}
 		response.writeHead(intStatus, objOptions);
 		response.write(strContent, "binary");
-		response.end();		
+		response.end();
 	};
 
 	var serveFile = function(filename) {
 		// console.log("accessing:", filename);
 		var strMime = mime.lookup(filename) || conf.DefaultContentType;
-		fs.readFile(filename, "binary", function(err, file) {
+
+		fs.stat(filename, function(err, stat) {
 			if (err) {
 				writeEntireResponse(500, err + "\n", {"Content-Type": "text/plain"});
 				return;
 			}
-
-			writeEntireResponse(200, file, {"Content-Type": strMime});
+			response.writeHeader(200,{"Content-Type": strMime, "Content-Length": stat.size});
+			var fReadStream = fs.createReadStream(filename);
+			fReadStream.pipe(response);
 		});
 		return true;
 	};
@@ -72,7 +73,7 @@ http.createServer(function(request, response) {
 		return true;
 	};
 	// var hasIndex = function(filename) {
-	// 	return fs.existsSync(filename + "/" + conf.DirectoryIndex) ? filename + "/" + conf.DirectoryIndex : false;
+		// return fs.existsSync(filename + "/" + conf.DirectoryIndex) ? filename + "/" + conf.DirectoryIndex : false;
 	// };
 
 	var bitIsServable = isServable(filename);
@@ -86,7 +87,7 @@ http.createServer(function(request, response) {
 				// console.log("di.Format", di.Format);
 				di.Format = (objUrl.query["f"] === "json" || objUrl.query["f"] === "html") ? objUrl.query["f"] : "";
 				// console.log("di.Format", di.Format);
-				var directoryIndex = di.getDirectory(filename, function(objFiles) {
+				di.getDirectory(filename, function(objFiles) {
 					// util.puts("filename", filename);
 					if ( typeof objFiles !== "string") {
 						writeEntireResponse({"filesystem": [objFiles]});
