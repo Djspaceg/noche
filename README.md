@@ -1,17 +1,17 @@
 noche
 =====
 
-A simple Node.JS server based on the design style and modules concepts of Apache.
+A simple Node.JS server based on the design style and modules concepts of Apache. (Pronounced "_No-chee_", like <strong>No</strong>de+Apa<strong>che</strong>.)
 
 What the hell does that mean: "style and modules concepts of Apache"? -- I really like the way Apache works, its modules, and even its internal configuration variables. Though some parts of it, like the directory indexing seem dated, tedious to configure and tedious integrate into modern applications.
 
 Aren't there like dozens of web servers out there already? Why did you make this one? -- Why not? Sometimes you just can't find what you're wanting in existing projects or products. Take a look below at what Noche does well.
 
-Noche (pronounced No-chee, like Node+Apache) to the rescue! Noche makes the following easy!
+Noche to the rescue! Noche makes the following easy!
 
 * Directory Indexing
 	* Output in either stylable HTML or JSON
-	* Smart indexing, detect if there's an index.html or <foldername>.nfo file inside a directory before opening it.
+	* Smart indexing, detect if there's an index.html or _folderName_.nfo file inside a directory before opening it.
 * Automatic conversion of XML files to JSON with just an optional URL parameter
 * Easy configuration with a few powerful options in configuration files.
 
@@ -77,4 +77,83 @@ Noche will output any directory index in either format with the flip of a switch
 		}
 	]
 }
+```
+
+## JSON for All!
+
+Noche supports a fancy feature that can automatically parse and output any proper XML to JSON. Simply request any XML file with the familiar `?f=json` query-string GET arguments, and presto-chango you get that XML file converted to JSON.
+
+In the event that the file is malformed or not actually XML, you get nothing, a blank/empty response.** But you do get a handy error, so you can trap against that with your XHR code.
+
+** _This seems crappy in retrospect. Maybe I'll fix this so you get the original file without any conversion..._
+
+### JSONP
+
+So you like JSON, but you want JSONP. Well, just provide a `callback=YourFunctionNameHere` argument in the query-string and you'll get the response wrapped in a function of your naming. This argument works with anything outputtable in JSON format. Ex:
+
+`/path/filename.xml?f=json&callback=YourFunctionNameHere`
+
+```
+YourFunctionNameHere({
+	"filesystem": [
+		{
+			"path": "/movie-info-page/",
+			"name": "movie-info-page",
+			"hasMedia": false,
+	...
+});
+```
+
+## Configuration
+
+What good is a thing, if it's not customizable? Everything that makes sense to be customizable, is. The core server, and each extension, has their own config files. This lets you customize just what you want and not have to sift through a bunch of noise.
+
+Each extension's config file's settings take precedence over the core's config, just in case that's relevant to you.
+
+## Installation
+
+Currently, Noche is only set up to run as a service on Mac OS X. I plan on expanding this in the near future to at least run as a service under linux (Ubuntu/Mint).
+
+### Basic Running (Any OS)
+
+Simply execute "`$ node server.js`" from within the niche directory and you're up and running. Press `[Ctrl]`+`[c]` to exit it. You could be fancier and launch, output and detach so it stays running in the background by doing like so:
+
+```
+$ node server.js >> logs/access.log 2>&1 &
+```
+Now your logs will be in the logs directory, in a file called "access.log".
+
+### Classy Install (Mac OS X)
+
+Included in the Noche package is a **service/** folder. In here you'll find a **com.resourcefork.noche.plist** file. From the command-line, type the following:
+
+_Change directories in the command line to the service directory:_
+
+```
+cd service
+```
+_And Load the service p-list, then start the service:_
+
+```
+launchctl load com.resourcefork.noche.plist
+```
+Noche will then be loaded, output to Console.app, and start every time you boot up. Verify it's running like so:
+
+```
+launchctl list | grep noche
+```
+You should see a number, followed by a "-", then the service name: "com.resourcefork.noche". If there's no number (Process ID), then Noche is loaded, but not running.
+
+Noche is persistent, so it will continuously relaunch if it's killed or the process is stopped.***
+
+***If the process is stopped by launchctl, it shouldn't start back up, but it does. Need to figure out why.
+
+_**Fun tip:** You can even kill the server and it will come back to life! It's allllllive!_
+
+#### Uninstall
+
+If you'd like to turn it off, or get rid of it, simply do the opposite of what you just did, like so:
+
+```
+launchctl unload com.resourcefork.noche.plist
 ```
