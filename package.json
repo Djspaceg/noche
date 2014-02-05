@@ -1,11 +1,11 @@
 {
 	"name": "noche",
 	"description": "An apache-style-configuration web server written in node.",
-	"keywords" : ["web", "server", "webserver", "apache", "directoryindex", "html", "json"],
-  "homepage" : "https://github.com/Leonidas-from-XIV/node-xml2js",
-  "version" : "0.0.1",
-  "author" : "Blake Stephens <brak.stephens@gmail.com> (http://portfolio.resourcefork.com)",
-	"repository" : {
+	"keywords": ["web", "server", "webserver", "apache", "directoryindex", "html", "json"],
+	"homepage": "https://github.com/Leonidas-from-XIV/node-xml2js",
+	"version": "0.0.1",
+	"author": "Blake Stephens <brak.stephens@gmail.com> (http://portfolio.resourcefork.com)",
+	"repository": {
 		"type": "git",
 		"url": "https://github.com/Djspaceg/noche.git"
 	},
@@ -15,17 +15,20 @@
 			"url": "https://raw.github.com/Leonidas-from-XIV/node-xml2js/master/LICENSE"
 		}
 	],
-	"directories" : {
+	"directories": {
 		"conf": "./conf",
 		"extensions": "./extensions",
 		"lib": "./lib",
 		"service": "./service"
 	},
-	"scripts" : {
-		"server": "./server.js"
+	"scripts": {
+		"start": "node server.js"
 	},
-	"dependencies" : {
-		"mime" : ">=1.0.0",
-		"xml2js" : ">=0.4.1"
+	"dependencies": {
+		"express": "3.x",
+		"mime": ">=1.0.0",
+		"xml2js": ">=0.4.1",
+	    "ejs": "*",
+	    "less-middleware": "*"
 	}
 }

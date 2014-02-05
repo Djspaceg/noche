@@ -3,119 +3,86 @@
 // Based on rpflorence's Gist @ https://gist.github.com/rpflorence/701407
 // 
 
-var util = require("util"),
+var express = require("express"),
+	routes = require("./routes"),
+	user = require("./routes/user"),
+	util = require("util"),
 	http = require("http"),
-	url  = require("url"),
+	// url  = require("url"),
 	path = require("path"),
-	fs   = require("fs"),
-	conf = require("./conf/server.conf.js"),
-	di   = require("./extensions/directory-indexing.js"),
-	x2j  = require("./extensions/xml2json.js"),
-	mime = require("mime");
+	// fs   = require("fs"),
+	conf = require("./conf/server.conf.js");
+	// di   = require("./extensions/directory-indexing.js"),
+	// x2j  = require("./extensions/xml2json.js"),
+	// mime = require("mime");
 
-http.createServer(function(request, response) {
-	var objUrl = url.parse(request.url, true),
-		uri = decodeURI(path.normalize(objUrl.pathname)),
-		filename = path.join(conf.DocumentRoot, uri);
-	// process.cwd()
+var app = express();
 
-	// console.log("process.cwd()", process.cwd(), "request.url", request.url, "uri", uri);
-	
-	var writeEntireResponse = function(intStatus, strContent, objOptions) {
-		if (arguments.length == 1) {
-			strContent = arguments[0];
-			intStatus = 200;
-		}
-		if (!objOptions) {
-			objOptions = {"Content-Type": conf.DefaultContentType};
-		}
-		if (strContent === undefined) {
-			strContent = "";
-		}
-		else if ( typeof strContent !== "string") {
-			objOptions["Content-Type"] = "application/json";
-			strContent = JSON.stringify(strContent);
-			if (objUrl.query["callback"]) {
-				objOptions["Content-Type"] = "application/javascript";
-				strContent = objUrl.query["callback"] + "(" + strContent + ");";
-			}
-		}
-		response.writeHead(intStatus, objOptions);
-		response.write(strContent, "binary");
-		response.end();
-	};
+// all environments
+app.set("title", conf.ServerName || "Noche Server");
+app.set("port", process.env.PORT || parseInt(conf.Listen, 10) || 8888);
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
+app.use(express.favicon());
+app.use(express.logger("dev"));
+app.use(express.compress());
+app.use(express.json());
+app.use(express.urlencoded());
+app.use(express.methodOverride());
+app.use(express.cookieParser("your secret here"));
+app.use(express.session());
+app.use(app.router);
+app.use(require("less-middleware")({ src: path.join(__dirname, conf.DocumentRoot) }));
 
-	var serveFile = function(filename) {
-		// console.log("accessing:", filename);
-		var strMime = mime.lookup(filename) || conf.DefaultContentType;
+// development only
+if ("development" == app.get("env")) {
+	app.use(express.errorHandler());
+}
 
-		fs.stat(filename, function(err, stat) {
-			if (err) {
-				writeEntireResponse(500, err + "\n", {"Content-Type": "text/plain"});
-				return;
-			}
-			response.writeHeader(200,{"Content-Type": strMime, "Content-Length": stat.size});
-			var fReadStream = fs.createReadStream(filename);
-			fReadStream.pipe(response);
-		});
-		return true;
-	};
+// app.get("/", routes.index);
+app.get("/users", user.list);
+app.get("/json*", function(req, res){
+	// var url = req.params[0];
+	console.log("req",req);
+	req.url = req.param(0);
+	req.query.f = "json";
+	routes.index(req, res);
+});
+app.get("*", function(req, res){
+	// var file = req.params.file;
+	var file = req.param(0);
+	console.log("file: ", conf.DocumentRoot + file);
+	res.sendfile(conf.DocumentRoot + file);
+	// req.user.mayViewFilesFrom(uid, function(yes) {
+		// if (yes) {
+		// }
+		// else {
+			// res.send(403, 'Sorry! But no, you cant see that.');
+		// }
+	// });
+});
+// app.get('/user:id', function() { console.log("user ACTUALLY ran...") }, function(){
+	// console.log("Oh fuck you man...");
+// });
+// app.get('/company/:id*', function(req, res, next) {
+//     res.json({
+//         id: req.param('id'),
+//         path: req.param(0)
+//     });    
+// });
+// app.get('/companies*', function(req, res, next) {
+//     res.json({
+//         // id: req.param('id'),
+//         path: req.param(0)
+//     });    
+// });
 
-	var isServable = function(filename) {
-		var fileExists = fs.existsSync(filename);
-		if (!fileExists) {
-			return false;
-		}
-		var objFileInfo = fs.statSync(filename);
-		if (objFileInfo.isDirectory()) {
-			return "maybe";
-		}
-		return true;
-	};
-	// var hasIndex = function(filename) {
-		// return fs.existsSync(filename + "/" + conf.DirectoryIndex) ? filename + "/" + conf.DirectoryIndex : false;
-	// };
+app.use(express.directory( conf.DocumentRoot ));
+// app.use(express.static(path.join(__dirname, conf.DocumentRoot)));
 
-	var bitIsServable = isServable(filename);
-	if (bitIsServable) {
-		if (bitIsServable === "maybe") {
-			var bitHasIndex = di.hasIndex(filename);
-			if (bitHasIndex) {
-				serveFile(bitHasIndex);
-			}
-			else {
-				// console.log("di.Format", di.Format);
-				di.Format = (objUrl.query["f"] === "json" || objUrl.query["f"] === "html") ? objUrl.query["f"] : "";
-				// console.log("di.Format", di.Format);
-				di.getDirectory(filename, function(objFiles) {
-					// util.puts("filename", filename);
-					if ( typeof objFiles !== "string") {
-						writeEntireResponse({"filesystem": [objFiles]});
-					}
-					else {
-						writeEntireResponse(objFiles);
-					}
-				});
-			}
-		}
-		else {
-			if (x2j.get("Enabled") && objUrl.query["f"] === "json" ) {
-				// util.puts("Attempting to convert "+ filename +" to Json.");
-				x2j.convertToJson(filename, function(json) {
-					writeEntireResponse(json);
-				});
-			}
-			else {
-				serveFile(filename);
-			}
-		}
-	}
-	else {
-		writeEntireResponse(404, "404 Not Found\n"+uri, {"Content-Type": "text/plain"});
-	}
-	return;
-}).listen(parseInt(conf.Listen, 10));
+// app.use(express.static('public'))
 
-// console.log(" ## Noche server running ##\n  => http://localhost:" + conf.Listen + "/\n [CTRL] + [C] to shutdown");
-/* server started */  
-util.puts(" ## Noche server running ####################################################\n  => http://localhost:" + conf.Listen + "/");
+http.createServer(app).listen(app.get("port"), function() {
+	/* server started */  
+	util.puts(" ## Noche server running ## \n  => http://localhost:" + conf.Listen + "/");
+});

@@ -7,6 +7,8 @@
 // This file stores configuration and settings for the noche server.
 //
 
+exports.ServerName = "Noche Media Server";
+
 exports.Listen = 8888;
 
 exports.ServerAdmin = "you@example.com";
