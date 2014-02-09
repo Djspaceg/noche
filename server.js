@@ -5,6 +5,7 @@
 
 var express = require("express"),
 	routes = require("./routes"),
+	json = require("./routes/json"),
 	user = require("./routes/user"),
 	util = require("util"),
 	http = require("http"),
@@ -17,6 +18,8 @@ var express = require("express"),
 	// mime = require("mime");
 
 var app = express();
+
+// __dirname = Where the server is running from.
 
 // all environments
 app.set("title", conf.ServerName || "Noche Server");
@@ -37,48 +40,30 @@ app.use(require("less-middleware")({ src: path.join(__dirname, conf.DocumentRoot
 // development only
 if ("development" == app.get("env")) {
 	app.use(express.errorHandler());
+	// console.log("process.env",process.env);
 }
 
-// app.get("/", routes.index);
+/// index.html keeps being requested when a folder is asked for...
+// app.use(express.static(path.join(__dirname, conf.DocumentRoot)));
+
+// app.get("*", routes.index);
 app.get("/users", user.list);
 app.get("/json*", function(req, res){
-	// var url = req.params[0];
-	console.log("req",req);
+	// console.log("Converting to JSON",req.url);
 	req.url = req.param(0);
 	req.query.f = "json";
-	routes.index(req, res);
+	json.index(req, res);
+	// routes.index(req, res);
 });
-app.get("*", function(req, res){
-	// var file = req.params.file;
-	var file = req.param(0);
-	console.log("file: ", conf.DocumentRoot + file);
-	res.sendfile(conf.DocumentRoot + file);
-	// req.user.mayViewFilesFrom(uid, function(yes) {
-		// if (yes) {
-		// }
-		// else {
-			// res.send(403, 'Sorry! But no, you cant see that.');
-		// }
-	// });
-});
-// app.get('/user:id', function() { console.log("user ACTUALLY ran...") }, function(){
-	// console.log("Oh fuck you man...");
-// });
-// app.get('/company/:id*', function(req, res, next) {
-//     res.json({
-//         id: req.param('id'),
-//         path: req.param(0)
-//     });    
-// });
-// app.get('/companies*', function(req, res, next) {
-//     res.json({
-//         // id: req.param('id'),
-//         path: req.param(0)
-//     });    
+// app.get(function(req, res){
+// 	var file = req.param(0);
+// 	console.log("__dirname:", path.join(__dirname), req.subdomains);
+// 	res.sendfile(conf.DocumentRoot + file);
 // });
 
-app.use(express.directory( conf.DocumentRoot ));
-// app.use(express.static(path.join(__dirname, conf.DocumentRoot)));
+app.get("*", routes.index);
+// app.use(express.directory( conf.DocumentRoot ));
+// app.use(express.static(conf.DocumentRoot));
 
 // app.use(express.static('public'))
 

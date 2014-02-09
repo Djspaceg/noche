@@ -31,14 +31,17 @@ exports.convertToJson = function(path, funSuccess) {
 	fs.readFile(path, function(err, data) {
 		if (!err && data) {
 			if (data.asciiSlice(0,1) === "<") {
+				// util.puts("Converting '"+ path +"'.");
 				parser.parseString(data);
 			}
 			else {
 				util.puts("Converting '"+ path +"' but it does not appear to be XML.");
+				funSuccess({error: "Converting '"+ path +"' but it does not appear to be XML."}, 406);
 			}
 		}
 		else {
 			util.puts("Error loading '"+ path +"': "+ err);
+			funSuccess({error: "Error loading '"+ path +"': "+ err}, 400);
 		}
 	});
 	return true;

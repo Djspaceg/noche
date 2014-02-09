@@ -91,8 +91,8 @@ exports.getDirectory = function(p, funIn) {
 		files.map(function (file) {
 			return path.join(p, file);
 		}).filter(function (file) {
-			if (exports.get("HeaderFilename") && path.basename(file) == exports.get("HeaderFilename")) return false;
-			if (exports.get("FooterFilename") && path.basename(file) == exports.get("FooterFilename")) return false;
+			if (exports.get("HeaderFilename") && path.basename(file) == exports.get("HeaderFilename")) {return false;}
+			if (exports.get("FooterFilename") && path.basename(file) == exports.get("FooterFilename")) {return false;}
 			return !(path.basename(file).match(exports.get("Ignore")));
 		}).forEach(function (file) {
 			// console.log("- file: ", file, "- p:", p);
@@ -134,24 +134,25 @@ exports.trimDocumentRoot = function(strPath) {
 };
 exports.getFileInfo = function(file) {
 	var objStats = fs.statSync(file),
+		bitIsDir = objStats.isDirectory(),
 		objFile = {
 			name: path.basename(file),
 			size: objStats.size,
 			mtime: objStats.mtime,
-			path: exports.trimDocumentRoot(file) + (objStats.isDirectory() ? "/" : ""),
-			ext: objStats.isDirectory() ? "folder" : path.extname(file).replace(/^\./, ""),
-			isDir: objStats.isDirectory(),
-			hasIndex: exports.hasIndex(file),
-			hasMedia: exports.hasMedia(file)
-	};
-	if (objFile.path == "") {
+			path: exports.trimDocumentRoot(file) + (bitIsDir ? "/" : ""),
+			ext: bitIsDir ? "folder" : path.extname(file).replace(/^\./, ""),
+			isDir: bitIsDir,
+			hasIndex: bitIsDir ? exports.hasIndex(file) : false,
+			hasMedia: bitIsDir ? exports.hasMedia(file) : false
+		};
+	if (objFile.path === "") {
 		objFile.path = "/";
 	}
 	return objFile;
 };
 exports.getFile = function(strPath, strCurrentDirectory) {
-	var strOut = "",
-		strCurrentDirectory = strCurrentDirectory || "";
+	var strOut = "";
+	strCurrentDirectory = strCurrentDirectory || "";
 	if (strPath) {
 		var fileFullPath = strCurrentDirectory + strPath;
 		if (strPath.match(/^\//)) {
