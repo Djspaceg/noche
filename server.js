@@ -9,24 +9,20 @@ var express = require("express"),
 	user = require("./routes/user"),
 	util = require("util"),
 	http = require("http"),
-	// url  = require("url"),
 	path = require("path"),
-	// fs   = require("fs"),
 	conf = require("./conf/server.conf.js");
-	// di   = require("./extensions/directory-indexing.js"),
-	// x2j  = require("./extensions/xml2json.js"),
-	// mime = require("mime");
 
 var app = express();
 
 // __dirname = Where the server is running from.
+// console.log("__dirname: ", __dirname);
 
 // all environments
 app.set("title", conf.ServerName || "Noche Server");
 app.set("port", process.env.PORT || parseInt(conf.Listen, 10) || 8888);
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
-app.use(express.favicon());
+app.use(express.favicon(__dirname + "/public/images/favicon.ico"));
 app.use(express.logger("dev"));
 app.use(express.compress());
 app.use(express.json());
@@ -47,7 +43,7 @@ if ("development" == app.get("env")) {
 // app.use(express.static(path.join(__dirname, conf.DocumentRoot)));
 
 // app.get("*", routes.index);
-app.get("/users", user.list);
+// app.get("/users", user.list);
 app.get("/json*", function(req, res){
 	// console.log("Converting to JSON",req.url);
 	req.url = req.param(0);
@@ -55,11 +51,6 @@ app.get("/json*", function(req, res){
 	json.index(req, res);
 	// routes.index(req, res);
 });
-// app.get(function(req, res){
-// 	var file = req.param(0);
-// 	console.log("__dirname:", path.join(__dirname), req.subdomains);
-// 	res.sendfile(conf.DocumentRoot + file);
-// });
 
 app.get("*", routes.index);
 // app.use(express.directory( conf.DocumentRoot ));
