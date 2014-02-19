@@ -27,15 +27,6 @@ exports.index = function(request, response) {
 		if (strContent === undefined) {
 			strContent = "";
 		}
-		else if ( typeof strContent !== "string") {
-			if (request.query["callback"]) {
-				response.jsonp(strContent);
-			}
-			else {
-				response.json(strContent);
-			}
-			return;
-		}
 		response.writeHead(intStatus, objOptions);
 		response.write(strContent, "binary");
 		response.end();
@@ -61,6 +52,7 @@ exports.index = function(request, response) {
 				response.sendfile(filename);
 			}
 			else {
+				di.Format = "html";
 				di.getDirectory(filename, function(objFiles) {
 					writeEntireResponse(objFiles);
 				});
