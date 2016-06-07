@@ -118,4 +118,4 @@ http.createServer(function(request, response) {
 
 // console.log(" ## Noche server running ##\n  => http://localhost:" + conf.Listen + "/\n [CTRL] + [C] to shutdown");
 /* server started */  
-util.puts(" ## Noche server running ####################################################\n  => http://localhost:" + conf.Listen + "/");
+console.log(" ## Noche server running ####################################################\n  => http://localhost:" + conf.Listen + "/");

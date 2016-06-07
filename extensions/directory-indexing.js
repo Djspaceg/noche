@@ -17,52 +17,53 @@ Date.prototype.toIsoTimeString = function() {
 	var strY = this.getFullYear().toString();
 	var strM = (this.getMonth()+1).toString();
 	var strD  = this.getDate().toString();
-	return strY + "-" + (strM[1] ? strM : "0" + strM[0]) + "-" + (strD[1] ? strD : "0" + strD[0]);
+	return strY + '-' + (strM[1] ? strM : '0' + strM[0]) + '-' + (strD[1] ? strD : '0' + strD[0]);
 };
 
-var fs = require("fs"),
-	path = require("path"),
-	serverconf = require("../conf/server.conf.js"),
-	conf = require("../conf/directory-indexing.conf.js");
+var fs = require('fs'),
+	path = require('path'),
+	serverconf = require('../conf/server.conf.js'),
+	conf = require('../conf/directory-indexing.conf.js'),
+	filesize = require('file-size');
 	
 exports.get = function(strProp) {
 	return exports[strProp] || conf[strProp] || serverconf[strProp];
 };
 
 exports.hasIndex = function(filename) {
-	return fs.existsSync(filename + "/" + exports.get("DirectoryIndex")) ? exports.get("DirectoryIndex") : false;
+	return fs.existsSync(filename + '/' + exports.get('DirectoryIndex')) ? exports.get('DirectoryIndex') : false;
 };
 
 exports.hasMedia = function(filename) {
 	var strBasename = path.basename(filename),
-		arrThumbnailNames = (exports.get("MediaMetadataThumbnailExtension") instanceof Array) ? exports.get("MediaMetadataThumbnailExtension") : [exports.get("MediaMetadataThumbnailExtension")],
-		strThumbnailExt = "",
-		strThumbnailName = "";
+		arrThumbnailNames = (exports.get('MediaMetadataThumbnailExtension') instanceof Array) ? exports.get('MediaMetadataThumbnailExtension') : [exports.get('MediaMetadataThumbnailExtension')],
+		strThumbnailExt = '',
+		strThumbnailName = '';
 
 	for (var i = 0; i < arrThumbnailNames.length; i++) {
 		strThumbnailExt = arrThumbnailNames[i];
 		strThumbnailName = strBasename + strThumbnailExt;
 		// Exact match name
-		if ( fs.existsSync(filename + "/" + strThumbnailName) ) {
+		if ( fs.existsSync(filename + '/' + strThumbnailName) ) {
 			return strThumbnailName;
 		}
 		// Article at the beginning of the title
 		if ( strBasename.match(/^\s*The\s/i) ) {
-			strThumbnailName = strBasename.replace(/^\s*(The)\s(.*)\s*(\(.*\))\s*$/i, "$2, $1 $3") + strThumbnailExt;
-			if ( fs.existsSync(filename + "/" + strThumbnailName) ) {
+			strThumbnailName = strBasename.replace(/^\s*(The)\s(.*)\s*(\(.*\))\s*$/i, '$2, $1 $3') + strThumbnailExt;
+			if ( fs.existsSync(filename + '/' + strThumbnailName) ) {
 				return strThumbnailName;
 			}
 		}
 		// Article at the end of the title
 		if ( strBasename.match(/,\s*The\s+\(/i) ) {
-			strThumbnailName = strBasename.replace(/^\s*(.*),\s*(The)\s*(\(.*\))\s*$/i, "$2 $1 $3") + strThumbnailExt;
-			if ( fs.existsSync(filename + "/" + strThumbnailName) ) {
+			strThumbnailName = strBasename.replace(/^\s*(.*),\s*(The)\s*(\(.*\))\s*$/i, '$2 $1 $3') + strThumbnailExt;
+			if ( fs.existsSync(filename + '/' + strThumbnailName) ) {
 				return strThumbnailName;
 			}
 		}
 	};
 	// No variations found...
-	// return "NONE FOUND: " + strThumbnailName;
+	// return 'NONE FOUND: ' + strThumbnailName;
 	return false;
 };
 
@@ -70,47 +71,50 @@ exports.getDirectory = function(p, funIn) {
 	p = path.normalize(p);
 	fs.readdir(p, function (err, files) {
 		var arrFiles = [],
-			strOut = "";
+			strOut = '';
 		if (err) {
 			throw err;
 		}
 
-		if (exports.get("Format") === "html") {
-			strOut+= exports.getFile( exports.get("HeaderFilename") );
+		if (exports.get('Format') === 'html') {
+			strOut+= exports.getFile( exports.get('HeaderFilename') );
 			strOut+= '<table class="directory-indexing">';
 		}
 
-		// console.log("Root Ccceck comparison: ",p, serverconf.DocumentRoot);
-		if (p != serverconf.DocumentRoot + "/" && (
-				(exports.get("Format") === "json" && exports.get("IncludeParentDirJson"))
+		// console.log('Root Ccceck comparison: ',p, serverconf.DocumentRoot);
+		if (p != serverconf.DocumentRoot + '/' && (
+				(exports.get('Format') === 'json' && exports.get('IncludeParentDirJson'))
 				||
-				(exports.get("Format") === "html" && exports.get("IncludeParentDirHtml"))
+				(exports.get('Format') === 'html' && exports.get('IncludeParentDirHtml'))
 			)) {
-			files.unshift("..");
+			files.unshift('..');
 		}
 		files.map(function (file) {
 			return path.join(p, file);
 		}).filter(function (file) {
-			if (exports.get("HeaderFilename") && path.basename(file) == exports.get("HeaderFilename")) return false;
-			if (exports.get("FooterFilename") && path.basename(file) == exports.get("FooterFilename")) return false;
-			return !(path.basename(file).match(exports.get("Ignore")));
+			console.log('HeaderFilename', path.basename(exports.get('HeaderFilename')),' - ', path.basename(file));
+			if (exports.get('HeaderFilename') && path.basename(path.basename(file)) == exports.get('HeaderFilename')) return false;
+			if (exports.get('FooterFilename') && path.basename(path.basename(file)) == exports.get('FooterFilename')) return false;
+			return !(path.basename(file).match(exports.get('Ignore')));
 		}).forEach(function (file) {
-			// console.log("- file: ", file, "- p:", p);
-			var objFile = exports.getFileInfo(file);
+			// console.log('- file: ', file, '- p:', p);
+			var objFile = exports.getFileInfo(file),
+				rowClass = '';
 			if (file.length < p.length) {
-				objFile.name = "Parent Directory";
+				objFile.name = 'Parent Directory';
+				rowClass = 'parent'
 			}
-			if (exports.get("Format") === "html") {
-				strOut+= buildHtmlRow(objFile);
+			if (exports.get('Format') === 'html') {
+				strOut+= buildHtmlRow(objFile, rowClass);
 			}
 			else {
 				arrFiles.push(objFile);
 			}
 		});
 
-		if (exports.get("Format") === "html") {
+		if (exports.get('Format') === 'html') {
 			strOut+= '</table>';
-			strOut+= exports.getFile( exports.get("FooterFilename") );
+			strOut+= exports.getFile( exports.get('FooterFilename') );
 			funIn(strOut);
 			return;
 		}
@@ -119,7 +123,7 @@ exports.getDirectory = function(p, funIn) {
 		var strPath = exports.trimDocumentRoot(p);
 		var objDirectory = {
 			path: strPath,
-			name: (strPath === "/") ? strPath : path.basename(strPath),
+			name: (strPath === '/') ? strPath : path.basename(strPath),
 			hasMedia: exports.hasMedia(p),
 			contents: arrFiles
 		};
@@ -128,30 +132,30 @@ exports.getDirectory = function(p, funIn) {
 };
 
 exports.trimDocumentRoot = function(strPath) {
-	var strDocRootRxRdy = serverconf.DocumentRoot.replace(/\//, "\/"),
-		re = new RegExp("^"+strDocRootRxRdy);
-	return strPath.replace(re, "");
+	var strDocRootRxRdy = serverconf.DocumentRoot.replace(/\//, '\/'),
+		re = new RegExp('^'+strDocRootRxRdy);
+	return strPath.replace(re, '');
 };
 exports.getFileInfo = function(file) {
 	var objStats = fs.statSync(file),
 		objFile = {
 			name: path.basename(file),
-			size: objStats.size,
+			size: objStats.isDirectory() ? '' : objStats.size,
 			mtime: objStats.mtime,
-			path: exports.trimDocumentRoot(file) + (objStats.isDirectory() ? "/" : ""),
-			ext: objStats.isDirectory() ? "folder" : path.extname(file).replace(/^\./, ""),
+			path: exports.trimDocumentRoot(file) + (objStats.isDirectory() ? '/' : ''),
+			ext: objStats.isDirectory() ? 'folder' : path.extname(file).replace(/^\./, ''),
 			isDir: objStats.isDirectory(),
 			hasIndex: exports.hasIndex(file),
 			hasMedia: exports.hasMedia(file)
 	};
-	if (objFile.path == "") {
-		objFile.path = "/";
+	if (objFile.path == '') {
+		objFile.path = '/';
 	}
 	return objFile;
 };
 exports.getFile = function(strPath, strCurrentDirectory) {
-	var strOut = "",
-		strCurrentDirectory = strCurrentDirectory || "";
+	var strOut = '',
+		strCurrentDirectory = strCurrentDirectory || '';
 	if (strPath) {
 		var fileFullPath = strCurrentDirectory + strPath;
 		if (strPath.match(/^\//)) {
@@ -165,11 +169,19 @@ exports.getFile = function(strPath, strCurrentDirectory) {
 	return strOut;	
 };
 
-var buildHtmlRow = function(objFile) {
-	var strOut = '<tr>';
-	strOut+= '<td class="file-name"><a href="'+ encodeURI(objFile.path) +'">'+ objFile.name + (objFile.isDir ? "/" + (objFile.hasIndex ? exports.get("DirectoryIndex") : "") : "") +'</a></td>';
-	strOut+= '<td class="file-size">'+ objFile.size +'</td>';
+var buildHtmlRow = function(objFile, rowClass) {
+	var strOut = '<tr class="file-row '+ rowClass +'">';
+	strOut+= '<td class="file-name"><a href="'+ encodeURI(objFile.path) +'">'+ prettyName(objFile.name) + (objFile.isDir ? '/' + (objFile.hasIndex ? exports.get('DirectoryIndex') : '') : '') +'</a></td>';
+	strOut+= '<td class="file-size">'+ filesize(objFile.size).human('jedec') +'</td>';
 	strOut+= '<td class="file-date">'+ objFile.mtime.toIsoTimeString() +'</td>';
 	strOut+= '</tr>';
 	return strOut;
+};
+
+var prettyName = function (name) {
+	name = name.replace(/\.(\w+)$/g, String.fromCharCode(19) + '$1');
+	name = name.replace(/\./g, ' ');
+	name = name.replace(/\-/g, ' - ');
+	name = name.replace(String.fromCharCode(19), '.');
+	return name;
 };

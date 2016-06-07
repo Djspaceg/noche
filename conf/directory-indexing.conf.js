@@ -3,7 +3,7 @@
 //
 
 // A regular expression of filenames which should not be included in the index.
-exports.Ignore = /^\./;
+exports.Ignore = /^(\.|@eaDir)/;
 
 // Specify the default output format that you'd like from getDirectory.
 // Options are: "json" "html"
