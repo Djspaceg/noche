@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// 
+//
 // Based on rpflorence's Gist @ https://gist.github.com/rpflorence/701407
-// 
+//
 
 var express = require("express"),
 	routes = require("./routes"),
@@ -59,6 +59,6 @@ app.get("*", routes.index);
 // app.use(express.static('public'))
 
 http.createServer(app).listen(app.get("port"), function() {
-	/* server started */  
+	/* server started */
 	util.puts(" ## Noche server running ## \n  => http://localhost:" + conf.Listen + "/");
 });

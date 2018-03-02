@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-// 
+//
 // Consider using this instead of Apache:
 // `twistd -n web -p 8888 --path .`
-// 
+//
 
 /// From:
 /// http://nodeexamples.com/2012/09/28/getting-a-directory-listing-using-the-fs-module-in-node-js/
@@ -11,7 +11,7 @@
 
 /// Date.prototype.toIsoTimeString by: o-o from:
 /// http://stackoverflow.com/questions/3066586/get-string-in-yyyymmdd-format-from-js-date-object
-/// 
+///
 
 Date.prototype.toIsoTimeString = function() {
 	var strY = this.getFullYear().toString();
@@ -24,7 +24,7 @@ var fs = require("fs"),
 	path = require("path"),
 	serverconf = require("../conf/server.conf.js"),
 	conf = require("../conf/directory-indexing.conf.js");
-	
+
 exports.get = function(strProp) {
 	return exports[strProp] || conf[strProp] || serverconf[strProp];
 };
@@ -60,7 +60,7 @@ exports.hasMedia = function(filename) {
 				return strThumbnailName;
 			}
 		}
-	};
+	}
 	// No variations found...
 	// return "NONE FOUND: " + strThumbnailName;
 	return false;
@@ -163,7 +163,7 @@ exports.getFile = function(strPath, strCurrentDirectory) {
 			strOut+= fs.readFileSync( fileFullPath );
 		}
 	}
-	return strOut;	
+	return strOut;
 };
 
 var buildHtmlRow = function(objFile) {
