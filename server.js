@@ -22,6 +22,11 @@ app.set("title", conf.ServerName || "Noche Server");
 app.set("port", process.env.PORT || parseInt(conf.Listen, 10) || 8888);
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
+app.use(function(req, res, next) {
+	res.header("Access-Control-Allow-Origin", "*");
+	// res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	next();
+});
 app.use(express.favicon(__dirname + "/public/images/favicon.ico"));
 app.use(express.logger("dev"));
 app.use(express.compress());
