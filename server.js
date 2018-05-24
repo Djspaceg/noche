@@ -44,7 +44,7 @@ if ('development' === app.get('env')) {
 	// console.log("process.env",process.env);
 }
 
-// / index.html keeps being requested when a folder is asked for...
+// index.html keeps being requested when a folder is asked for...
 // app.use(express.static(path.join(__dirname, conf.DocumentRoot)));
 
 // app.get("*", routes.index);
