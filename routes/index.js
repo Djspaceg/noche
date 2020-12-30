@@ -1,6 +1,7 @@
 /*
  * GET home page.
  */
+'use strict';
 
 const url = require('url'),
 	path = require('path'),

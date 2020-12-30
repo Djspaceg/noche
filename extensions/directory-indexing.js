@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+'use strict';
 
 //
 // Consider using this instead of Apache:
@@ -13,7 +14,7 @@
 // http://stackoverflow.com/questions/3066586/get-string-in-yyyymmdd-format-from-js-date-object
 //
 
-Date.prototype.toIsoTimeString = function() {
+Date.prototype.toIsoTimeString = function () {
 	const strY = this.getFullYear().toString();
 	const strM = (this.getMonth() + 1).toString();
 	const strD = this.getDate().toString();
@@ -25,7 +26,7 @@ const fs = require('fs'),
 	serverconf = require('../conf/server.conf.js'),
 	conf = require('../conf/directory-indexing.conf.js');
 
-const buildHtmlRow = function(objFile) {
+const buildHtmlRow = function (objFile) {
 	let strOut = '<tr>';
 	strOut +=
 		'<td class="file-name"><a href="' +
@@ -40,15 +41,15 @@ const buildHtmlRow = function(objFile) {
 	return strOut;
 };
 
-exports.get = function(strProp) {
+exports.get = function (strProp) {
 	return exports[strProp] || conf[strProp] || serverconf[strProp];
 };
 
-exports.hasIndex = function(filename) {
+exports.hasIndex = function (filename) {
 	return fs.existsSync(filename + '/' + exports.get('DirectoryIndex')) ? exports.get('DirectoryIndex') : false;
 };
 
-exports.hasMedia = function(filename) {
+exports.hasMedia = function (filename) {
 	const strBasename = path.basename(filename),
 		arrThumbnailNames =
 			exports.get('MediaMetadataThumbnailExtension') instanceof Array
@@ -84,7 +85,7 @@ exports.hasMedia = function(filename) {
 	return false;
 };
 
-exports.getDirectory = function(p, funIn) {
+exports.getDirectory = function (p, funIn) {
 	p = path.normalize(p);
 	fs.readdir(p, (err, files) => {
 		const arrFiles = [];
@@ -121,14 +122,21 @@ exports.getDirectory = function(p, funIn) {
 			})
 			.forEach(file => {
 				// console.log("- file: ", file, "- p:", p);
-				const objFile = exports.getFileInfo(file);
-				if (file.length < p.length) {
-					objFile.name = 'Parent Directory';
-				}
-				if (exports.get('Format') === 'html') {
-					strOut += buildHtmlRow(objFile);
-				} else {
-					arrFiles.push(objFile);
+				try {
+					if (fs.existsSync(file)) {
+						// file exists
+						const objFile = exports.getFileInfo(file);
+						if (file.length < p.length) {
+							objFile.name = 'Parent Directory';
+						}
+						if (exports.get('Format') === 'html') {
+							strOut += buildHtmlRow(objFile);
+						} else {
+							arrFiles.push(objFile);
+						}
+					}
+				} catch (err) {
+					console.error(err)
 				}
 			});
 
@@ -151,13 +159,13 @@ exports.getDirectory = function(p, funIn) {
 	});
 };
 
-exports.trimDocumentRoot = function(strPath) {
+exports.trimDocumentRoot = function (strPath) {
 	const strDocRootRxRdy = serverconf.DocumentRoot.replace(/\//, '/'),
 		re = new RegExp('^' + strDocRootRxRdy);
 	return strPath.replace(re, '');
 };
 
-exports.getFileInfo = function(file) {
+exports.getFileInfo = function (file) {
 	const objStats = fs.statSync(file),
 		bitIsDir = objStats.isDirectory(),
 		objFile = {
@@ -176,7 +184,7 @@ exports.getFileInfo = function(file) {
 	return objFile;
 };
 
-exports.getFile = function(strPath, strCurrentDirectory) {
+exports.getFile = function (strPath, strCurrentDirectory) {
 	let strOut = '';
 	strCurrentDirectory = strCurrentDirectory || '';
 	if (strPath) {

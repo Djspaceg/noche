@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+'use strict';
 //
 // Based on rpflorence's Gist @ https://gist.github.com/rpflorence/701407
 //

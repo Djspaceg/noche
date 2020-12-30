@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+'use strict';
 
 //
 // Consider using this instead of Apache:
@@ -13,11 +14,11 @@ const fs = require('fs'),
 	xml2js = require('xml2js'),
 	conf = require('../conf/xml2json.conf.js');
 
-exports.get = function(strProp) {
+exports.get = function (strProp) {
 	return exports[strProp] || conf[strProp];
 };
 
-exports.convertToJson = function(path, funSuccess) {
+exports.convertToJson = function (path, funSuccess) {
 	const parser = new xml2js.Parser(conf.Options);
 
 	parser.on('end', result => {

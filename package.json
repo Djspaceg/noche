@@ -29,6 +29,9 @@
 		"lib": "./lib",
 		"service": "./service"
 	},
+	"eslintConfig": {
+		"extends": "enact"
+	},
 	"scripts": {
 		"start": "node server.js"
 	},

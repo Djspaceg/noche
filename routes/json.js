@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+'use strict';
+
 const url = require('url'),
 	path = require('path'),
 	fs = require('fs'),
