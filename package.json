@@ -1,46 +1,53 @@
 {
-	"name": "noche",
-	"description": "An apache-style-configuration web server written in node.",
-	"keywords": [
-		"web",
-		"server",
-		"webserver",
-		"apache",
-		"directoryindex",
-		"html",
-		"json"
-	],
-	"homepage": "https://github.com/Leonidas-from-XIV/node-xml2js",
-	"version": "0.0.1",
-	"author": "Blake Stephens <brak.stephens@gmail.com> (http://portfolio.resourcefork.com)",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/Djspaceg/noche.git"
-	},
-	"licenses": [
-		{
-			"type": "MIT",
-			"url": "https://raw.github.com/Leonidas-from-XIV/node-xml2js/master/LICENSE"
-		}
-	],
-	"directories": {
-		"conf": "./conf",
-		"extensions": "./extensions",
-		"lib": "./lib",
-		"service": "./service"
-	},
-	"eslintConfig": {
-		"extends": "enact"
-	},
-	"scripts": {
-		"start": "node server.js"
-	},
-	"dependencies": {
-		"ejs": "*",
-		"express": "^3.21.2",
-		"less-middleware": "*",
-		"method-override": "^2.3.10",
-		"mime": ">=1.0.0",
-		"xml2js": ">=0.4.1"
-	}
+  "name": "noche",
+  "description": "An apache-style-configuration web server written in node.",
+  "keywords": [
+    "web",
+    "server",
+    "webserver",
+    "apache",
+    "directoryindex",
+    "html",
+    "json"
+  ],
+  "homepage": "https://github.com/Leonidas-from-XIV/node-xml2js",
+  "version": "0.0.1",
+  "author": "Blake Stephens <brak.stephens@gmail.com> (http://portfolio.resourcefork.com)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Djspaceg/noche.git"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://raw.github.com/Leonidas-from-XIV/node-xml2js/master/LICENSE"
+    }
+  ],
+  "directories": {
+    "conf": "./conf",
+    "extensions": "./extensions",
+    "lib": "./lib",
+    "service": "./service"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "ejs": "^3.1.8",
+    "errorhandler": "^1.5.1",
+    "express": "^4.18.1",
+    "less-middleware": "^3.1.0",
+    "method-override": "^2.3.10",
+    "mime": "^1.6.0",
+    "morgan": "^1.10.0",
+    "serve-favicon": "^2.5.0",
+    "xml2js": "^0.4.23"
+  },
+  "devDependencies": {
+    "eslint": "^8.17.0",
+    "eslint-config-prettier": "^8.5.0",
+    "prettier": "^2.7.0"
+  }
 }
