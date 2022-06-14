@@ -1,9 +1,3 @@
-#!/usr/bin/env node
-'use strict';
-//
-// Based on rpflorence's Gist @ https://gist.github.com/rpflorence/701407
-//
-
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import errorhandler from 'errorhandler';
@@ -20,7 +14,7 @@ import { createWriteStream } from 'fs';
 import { index } from './routes/index.js';
 // user = require('./routes/user'),
 // import { fileURLToPath } from 'url';
-import { Listen, ServerName } from './conf/server.conf.js';
+import serverConf from './conf/server.conf.js';
 import JsonResponse from './routes/json.js';
 
 // const __filename = fileURLToPath(import.meta.url);
@@ -43,8 +37,8 @@ var accessLogStream = createWriteStream(join('access.log'), {
 // console.log("__dirname: ", __dirname);
 
 // all environments
-app.set('title', ServerName || 'Noche Server');
-app.set('port', process.env.PORT || parseInt(Listen) || 8888);
+app.set('title', serverConf.ServerName || 'Noche Server');
+app.set('port', process.env.PORT || parseInt(serverConf.Listen) || 8888);
 // app.set('views', join(__dirname, 'views'));
 // app.set('view engine', 'ejs');
 app.use((req, res, next) => {
@@ -99,6 +93,8 @@ app.use(express.static('public'));
 createServer(app).listen(app.get('port'), () => {
   /* server started */
   console.log(
-    ` ## Noche server running ## ${new Date()} ##\n  => http://localhost:${Listen}`
+    ` ## Noche server running ## ${new Date()} ##\n  => http://localhost:${app.get(
+      'port'
+    )}`
   );
 });

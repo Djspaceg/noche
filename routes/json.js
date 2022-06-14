@@ -1,7 +1,7 @@
 import { parse } from 'url';
 import { normalize, join } from 'path';
 import { statSync } from 'fs';
-import { DocumentRoot } from '../conf/server.conf.js';
+import serverConf from '../conf/server.conf.js';
 import { getDirectory } from '../extensions/directory-indexing.js';
 import { get, convertToJson } from '../extensions/xml2json.js';
 
@@ -35,7 +35,7 @@ export default class JsonResponse {
 
     const objUrl = parse(req.url, true),
       uri = decodeURI(normalize(objUrl.pathname)),
-      filename = join(DocumentRoot, uri),
+      filename = join(serverConf.DocumentRoot, uri),
       objFileInfo = statSync(filename);
 
     // If it's real, and it's a folder,

@@ -1,13 +1,13 @@
 import { parse } from 'url';
 import { normalize, join } from 'path';
 import { existsSync, statSync } from 'fs';
-import { DocumentRoot, DefaultContentType } from '../conf/server.conf.js';
+import serverConf from '../conf/server.conf.js';
 import { hasIndex, getDirectory } from '../extensions/directory-indexing.js';
 
 export function index(request, response) {
   const objUrl = parse(request.url, true),
     uri = decodeURI(normalize(objUrl.pathname)),
-    filename = join(DocumentRoot, uri);
+    filename = join(serverConf.DocumentRoot, uri);
 
   // console.log("Running index.js because of",request.url);
 
@@ -17,7 +17,7 @@ export function index(request, response) {
       intStatus = 200;
     }
     if (!objOptions) {
-      objOptions = { 'Content-Type': DefaultContentType };
+      objOptions = { 'Content-Type': serverConf.DefaultContentType };
     }
     if (strContent === undefined) {
       strContent = '';

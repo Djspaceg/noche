@@ -1,7 +1,7 @@
 import { existsSync, readdir, readFileSync, statSync } from 'fs';
 import { basename, extname, join, normalize } from 'path';
-import * as conf from '../conf/directory-indexing.conf.js';
-import * as serverconf from '../conf/server.conf.js';
+import conf from '../conf/directory-indexing.conf.js';
+import serverConf from '../conf/server.conf.js';
 
 // From:
 // http://nodeexamples.com/2012/09/28/getting-a-directory-listing-using-the-fs-module-in-node-js/
@@ -43,7 +43,7 @@ const buildHtmlRow = function (objFile) {
 };
 
 export function get(strProp) {
-  return conf[strProp] || serverconf[strProp];
+  return conf[strProp] || serverConf[strProp];
 }
 
 export function hasIndex(filename) {
@@ -107,7 +107,7 @@ export function getDirectory(p, funIn, format = 'html') {
     }
 
     if (
-      p !== serverconf.DocumentRoot + '/' &&
+      p !== serverConf.DocumentRoot + '/' &&
       ((format === 'json' && get('IncludeParentDirJson')) ||
         (format === 'html' && get('IncludeParentDirHtml')))
     ) {
@@ -166,7 +166,7 @@ export function getDirectory(p, funIn, format = 'html') {
 }
 
 export function trimDocumentRoot(strPath) {
-  const strDocRootRxRdy = serverconf.DocumentRoot.replace(/\//, '/'),
+  const strDocRootRxRdy = serverConf.DocumentRoot.replace(/\//, '/'),
     re = new RegExp('^' + strDocRootRxRdy);
   return strPath.replace(re, '');
 }
@@ -197,7 +197,7 @@ export function getFile(strPath, strCurrentDirectory) {
     let fileFullPath = strCurrentDirectory + strPath;
     if (strPath.match(/^\//)) {
       // Our file is on the root level
-      fileFullPath = serverconf.DocumentRoot + strPath;
+      fileFullPath = serverConf.DocumentRoot + strPath;
     }
     if (existsSync(fileFullPath)) {
       strOut += readFileSync(fileFullPath);
