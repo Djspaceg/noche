@@ -1,19 +1,17 @@
-'use strict';
+import { readFile } from 'fs';
+import { Parser } from 'xml2js';
+import * as conf from '../conf/xml2json.conf.js';
 
 // / From:
 // / https://github.com/Leonidas-from-XIV/node-xml2js#options
 // /
 
-const fs = require('fs'),
-  xml2js = require('xml2js'),
-  conf = require('../conf/xml2json.conf.js');
+export function get(strProp) {
+  return conf[strProp];
+}
 
-exports.get = function (strProp) {
-  return exports[strProp] || conf[strProp];
-};
-
-exports.convertToJson = function (path, funSuccess) {
-  const parser = new xml2js.Parser(conf.Options);
+export function convertToJson(path, funSuccess) {
+  const parser = new Parser(conf.Options);
 
   parser.on('end', (result) => {
     if (funSuccess) {
@@ -21,26 +19,26 @@ exports.convertToJson = function (path, funSuccess) {
     }
   });
 
-  fs.readFile(path, (err, data) => {
+  readFile(path, (err, data) => {
     if (!err && data) {
-      if (data.asciiSlice(0, 1) === '<') {
-        parser.parseString(data);
-      } else {
-        console.log(
-          "Converting '" + path + "' but it does not appear to be XML."
-        );
-        funSuccess(
-          {
-            error:
-              "Converting '" + path + "' but it does not appear to be XML.",
-          },
-          406
-        );
+      try {
+        if (data.asciiSlice(0, 1) === '<') {
+          // File is XML-ish
+          parser.parseString(data);
+        } else {
+          // File is already JSON
+          funSuccess(JSON.parse(data.toString()));
+        }
+      } catch {
+        const error = `Converting "${path}" but it does not appear to be XML.`;
+        console.log(error);
+        funSuccess({ error }, 406);
       }
     } else {
-      console.log("Error loading '" + path + "': " + err);
-      funSuccess({ error: "Error loading '" + path + "': " + err }, 400);
+      const error = `Error loading "${path}": ${err}`;
+      console.log(error);
+      funSuccess({ error }, 400);
     }
   });
   return true;
-};
+}

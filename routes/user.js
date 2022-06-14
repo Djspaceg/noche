@@ -3,7 +3,7 @@
  */
 'use strict';
 
-exports.list = function (req, res) {
+export function list(req, res) {
   // res.send("respond with a resource");
-  res.json([app, req, res]);
-};
+  res.json([req, res]);
+}

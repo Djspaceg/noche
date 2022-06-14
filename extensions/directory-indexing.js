@@ -1,4 +1,7 @@
-'use strict';
+import { existsSync, readdir, readFileSync, statSync } from 'fs';
+import { basename, extname, join, normalize } from 'path';
+import * as conf from '../conf/directory-indexing.conf.js';
+import * as serverconf from '../conf/server.conf.js';
 
 // From:
 // http://nodeexamples.com/2012/09/28/getting-a-directory-listing-using-the-fs-module-in-node-js/
@@ -21,11 +24,6 @@ Date.prototype.toIsoTimeString = function () {
   );
 };
 
-const fs = require('fs'),
-  path = require('path'),
-  serverconf = require('../conf/server.conf.js'),
-  conf = require('../conf/directory-indexing.conf.js');
-
 const buildHtmlRow = function (objFile) {
   let strOut = '<tr>';
   strOut +=
@@ -34,7 +32,7 @@ const buildHtmlRow = function (objFile) {
     '">' +
     objFile.name +
     (objFile.isDir
-      ? '/' + (objFile.hasIndex ? exports.get('DirectoryIndex') : '')
+      ? '/' + (objFile.hasIndex ? get('DirectoryIndex') : '')
       : '') +
     '</a></td>';
   strOut += '<td class="file-size">' + objFile.size + '</td>';
@@ -44,22 +42,22 @@ const buildHtmlRow = function (objFile) {
   return strOut;
 };
 
-exports.get = function (strProp) {
-  return exports[strProp] || conf[strProp] || serverconf[strProp];
-};
+export function get(strProp) {
+  return conf[strProp] || serverconf[strProp];
+}
 
-exports.hasIndex = function (filename) {
-  return fs.existsSync(filename + '/' + exports.get('DirectoryIndex'))
-    ? exports.get('DirectoryIndex')
+export function hasIndex(filename) {
+  return existsSync(filename + '/' + get('DirectoryIndex'))
+    ? get('DirectoryIndex')
     : false;
-};
+}
 
-exports.hasMedia = function (filename) {
-  const strBasename = path.basename(filename),
+export function hasMedia(filename) {
+  const strBasename = basename(filename),
     arrThumbnailNames =
-      exports.get('MediaMetadataThumbnailExtension') instanceof Array
-        ? exports.get('MediaMetadataThumbnailExtension')
-        : [exports.get('MediaMetadataThumbnailExtension')];
+      get('MediaMetadataThumbnailExtension') instanceof Array
+        ? get('MediaMetadataThumbnailExtension')
+        : [get('MediaMetadataThumbnailExtension')];
   let strThumbnailExt = '',
     strThumbnailName = '';
 
@@ -67,7 +65,7 @@ exports.hasMedia = function (filename) {
     strThumbnailExt = arrThumbnailNames[i];
     strThumbnailName = strBasename + strThumbnailExt;
     // Exact match name
-    if (fs.existsSync(filename + '/' + strThumbnailName)) {
+    if (existsSync(filename + '/' + strThumbnailName)) {
       return strThumbnailName;
     }
     // Article at the beginning of the title
@@ -75,7 +73,7 @@ exports.hasMedia = function (filename) {
       strThumbnailName =
         strBasename.replace(/^\s*(The)\s(.*)\s*(\(.*\))\s*$/i, '$2, $1 $3') +
         strThumbnailExt;
-      if (fs.existsSync(filename + '/' + strThumbnailName)) {
+      if (existsSync(filename + '/' + strThumbnailName)) {
         return strThumbnailName;
       }
     }
@@ -84,7 +82,7 @@ exports.hasMedia = function (filename) {
       strThumbnailName =
         strBasename.replace(/^\s*(.*),\s*(The)\s*(\(.*\))\s*$/i, '$2 $1 $3') +
         strThumbnailExt;
-      if (fs.existsSync(filename + '/' + strThumbnailName)) {
+      if (existsSync(filename + '/' + strThumbnailName)) {
         return strThumbnailName;
       }
     }
@@ -92,60 +90,52 @@ exports.hasMedia = function (filename) {
   // No variations found...
   // return "NONE FOUND: " + strThumbnailName;
   return false;
-};
+}
 
-exports.getDirectory = function (p, funIn) {
-  p = path.normalize(p);
-  fs.readdir(p, (err, files) => {
+export function getDirectory(p, funIn, format = 'html') {
+  p = normalize(p);
+  readdir(p, (err, files) => {
     const arrFiles = [];
     let strOut = '';
     if (err) {
       throw err;
     }
 
-    if (exports.get('Format') === 'html') {
-      strOut += exports.getFile(exports.get('HeaderFilename'));
+    if (format === 'html') {
+      strOut += getFile(get('HeaderFilename'));
       strOut += '<table class="directory-indexing">';
     }
 
     if (
       p !== serverconf.DocumentRoot + '/' &&
-      ((exports.get('Format') === 'json' &&
-        exports.get('IncludeParentDirJson')) ||
-        (exports.get('Format') === 'html' &&
-          exports.get('IncludeParentDirHtml')))
+      ((format === 'json' && get('IncludeParentDirJson')) ||
+        (format === 'html' && get('IncludeParentDirHtml')))
     ) {
       files.unshift('..');
     }
     files
       .map((file) => {
-        return path.join(p, file);
+        return join(p, file);
       })
       .filter((file) => {
-        if (
-          exports.get('HeaderFilename') &&
-          path.basename(file) === exports.get('HeaderFilename')
-        ) {
+        if (get('HeaderFilename') && basename(file) === get('HeaderFilename')) {
           return false;
         }
-        if (
-          exports.get('FooterFilename') &&
-          path.basename(file) === exports.get('FooterFilename')
-        ) {
+        if (get('FooterFilename') && basename(file) === get('FooterFilename')) {
           return false;
         }
-        return !path.basename(file).match(exports.get('Ignore'));
+        return !basename(file).match(get('Ignore'));
       })
       .forEach((file) => {
         // console.log("- file: ", file, "- p:", p);
         try {
-          if (fs.existsSync(file)) {
+          if (existsSync(file)) {
             // file exists
-            const objFile = exports.getFileInfo(file);
+            const objFile = getFileInfo(file);
             if (file.length < p.length) {
               objFile.name = 'Parent Directory';
             }
-            if (exports.get('Format') === 'html') {
+            if (format === 'html') {
               strOut += buildHtmlRow(objFile);
             } else {
               arrFiles.push(objFile);
@@ -156,51 +146,51 @@ exports.getDirectory = function (p, funIn) {
         }
       });
 
-    if (exports.get('Format') === 'html') {
+    if (format === 'html') {
       strOut += '</table>';
-      strOut += exports.getFile(exports.get('FooterFilename'));
+      strOut += getFile(get('FooterFilename'));
       funIn(strOut);
       return;
     }
 
     // Wrap up what we gathered into a neat little package.
-    const strPath = exports.trimDocumentRoot(p);
+    const strPath = trimDocumentRoot(p);
     const objDirectory = {
       path: strPath,
-      name: strPath === '/' ? strPath : path.basename(strPath),
-      hasMedia: exports.hasMedia(p),
+      name: strPath === '/' ? strPath : basename(strPath),
+      hasMedia: hasMedia(p),
       contents: arrFiles,
     };
     funIn(objDirectory);
   });
-};
+}
 
-exports.trimDocumentRoot = function (strPath) {
+export function trimDocumentRoot(strPath) {
   const strDocRootRxRdy = serverconf.DocumentRoot.replace(/\//, '/'),
     re = new RegExp('^' + strDocRootRxRdy);
   return strPath.replace(re, '');
-};
+}
 
-exports.getFileInfo = function (file) {
-  const objStats = fs.statSync(file),
+export function getFileInfo(file) {
+  const objStats = statSync(file),
     bitIsDir = objStats.isDirectory(),
     objFile = {
-      name: path.basename(file),
+      name: basename(file),
       size: objStats.size,
       mtime: objStats.mtime,
-      path: exports.trimDocumentRoot(file) + (bitIsDir ? '/' : ''),
-      ext: bitIsDir ? 'folder' : path.extname(file).replace(/^\./, ''),
+      path: trimDocumentRoot(file) + (bitIsDir ? '/' : ''),
+      ext: bitIsDir ? 'folder' : extname(file).replace(/^\./, ''),
       isDir: bitIsDir,
-      hasIndex: bitIsDir ? exports.hasIndex(file) : false,
-      hasMedia: bitIsDir ? exports.hasMedia(file) : false,
+      hasIndex: bitIsDir ? hasIndex(file) : false,
+      hasMedia: bitIsDir ? hasMedia(file) : false,
     };
   if (objFile.path === '') {
     objFile.path = '/';
   }
   return objFile;
-};
+}
 
-exports.getFile = function (strPath, strCurrentDirectory) {
+export function getFile(strPath, strCurrentDirectory) {
   let strOut = '';
   strCurrentDirectory = strCurrentDirectory || '';
   if (strPath) {
@@ -209,9 +199,9 @@ exports.getFile = function (strPath, strCurrentDirectory) {
       // Our file is on the root level
       fileFullPath = serverconf.DocumentRoot + strPath;
     }
-    if (fs.existsSync(fileFullPath)) {
-      strOut += fs.readFileSync(fileFullPath);
+    if (existsSync(fileFullPath)) {
+      strOut += readFileSync(fileFullPath);
     }
   }
   return strOut;
-};
+}

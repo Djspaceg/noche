@@ -7,16 +7,16 @@
 // This file stores configuration and settings for the noche server.
 //
 
-exports.ServerName = 'Noche Media Server';
+export const ServerName = 'Noche Media Server';
 
-exports.Listen = 8888;
+export const Listen = 8888;
 
-exports.ServerAdmin = 'you@example.com';
+export const ServerAdmin = 'you@example.com';
 
 // Set your server's root level, the lowest level a visitor is allowed to go.
 // And a reminder, all directory names and paths do NOT end in a slash.
-exports.DocumentRoot = '/Users/blake/Source';
+export const DocumentRoot = '/Users/stepblk/Source';
 
-exports.DirectoryIndex = 'index.html';
+export const DirectoryIndex = 'index.html';
 
-exports.DefaultContentType = 'text/html';
+export const DefaultContentType = 'text/html';

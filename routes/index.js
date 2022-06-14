@@ -1,18 +1,13 @@
-/*
- * GET home page.
- */
-'use strict';
+import { parse } from 'url';
+import { normalize, join } from 'path';
+import { existsSync, statSync } from 'fs';
+import { DocumentRoot, DefaultContentType } from '../conf/server.conf.js';
+import { hasIndex, getDirectory } from '../extensions/directory-indexing.js';
 
-const url = require('url'),
-  path = require('path'),
-  fs = require('fs'),
-  conf = require('../conf/server.conf.js'),
-  di = require('../extensions/directory-indexing.js');
-
-exports.index = function (request, response) {
-  const objUrl = url.parse(request.url, true),
-    uri = decodeURI(path.normalize(objUrl.pathname)),
-    filename = path.join(conf.DocumentRoot, uri);
+export function index(request, response) {
+  const objUrl = parse(request.url, true),
+    uri = decodeURI(normalize(objUrl.pathname)),
+    filename = join(DocumentRoot, uri);
 
   // console.log("Running index.js because of",request.url);
 
@@ -22,7 +17,7 @@ exports.index = function (request, response) {
       intStatus = 200;
     }
     if (!objOptions) {
-      objOptions = { 'Content-Type': conf.DefaultContentType };
+      objOptions = { 'Content-Type': DefaultContentType };
     }
     if (strContent === undefined) {
       strContent = '';
@@ -33,11 +28,11 @@ exports.index = function (request, response) {
   };
 
   const isServable = function (fi) {
-    const fileExists = fs.existsSync(fi);
+    const fileExists = existsSync(fi);
     if (!fileExists) {
       return false;
     }
-    const objFileInfo = fs.statSync(fi);
+    const objFileInfo = statSync(fi);
     if (objFileInfo.isDirectory()) {
       return 'maybe';
     }
@@ -47,12 +42,11 @@ exports.index = function (request, response) {
   const bitIsServable = isServable(filename);
   if (bitIsServable) {
     if (bitIsServable === 'maybe') {
-      const bitHasIndex = di.hasIndex(filename);
+      const bitHasIndex = hasIndex(filename);
       if (bitHasIndex) {
         response.sendFile(filename);
       } else {
-        di.Format = 'html';
-        di.getDirectory(filename, (objFiles) => {
+        getDirectory(filename, (objFiles) => {
           writeEntireResponse(objFiles);
         });
       }
@@ -64,4 +58,4 @@ exports.index = function (request, response) {
       'Content-Type': 'text/plain',
     });
   }
-};
+}

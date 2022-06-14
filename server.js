@@ -4,23 +4,27 @@
 // Based on rpflorence's Gist @ https://gist.github.com/rpflorence/701407
 //
 
-const http = require('http'),
-  path = require('path'),
-  express = require('express'),
-  methodOverride = require('method-override'),
-  favicon = require('serve-favicon'),
-  morgan = require('morgan'),
-  compression = require('compression'),
-  cookieParser = require('cookie-parser'),
-  errorhandler = require('errorhandler'),
-  ejs = require('ejs'),
-  fs = require('fs'),
-  lessMiddleware = require('less-middleware'),
-  // rfs = require('rotating-file-stream'),
-  routes = require('./routes'),
-  json = require('./routes/json'),
-  // user = require('./routes/user'),
-  conf = require('./conf/server.conf.js');
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
+import errorhandler from 'errorhandler';
+import express, { urlencoded } from 'express';
+import { createServer } from 'http';
+import methodOverride from 'method-override';
+import morgan from 'morgan';
+import { join } from 'path';
+import favicon from 'serve-favicon';
+// rfs = require('rotating-file-stream'),
+// import ejs from 'ejs';
+import { createWriteStream } from 'fs';
+// import lessMiddleware from 'less-middleware';
+import { index } from './routes/index.js';
+// user = require('./routes/user'),
+// import { fileURLToPath } from 'url';
+import { Listen, ServerName } from './conf/server.conf.js';
+import JsonResponse from './routes/json.js';
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -31,7 +35,7 @@ const app = express();
 //   path: path.join(__dirname, 'log'),
 // });
 // create a write stream (in append mode)
-var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {
+var accessLogStream = createWriteStream(join('access.log'), {
   flags: 'a',
 });
 
@@ -39,26 +43,26 @@ var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {
 // console.log("__dirname: ", __dirname);
 
 // all environments
-app.set('title', conf.ServerName || 'Noche Server');
-app.set('port', process.env.PORT || parseInt(conf.Listen) || 8888);
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+app.set('title', ServerName || 'Noche Server');
+app.set('port', process.env.PORT || parseInt(Listen) || 8888);
+// app.set('views', join(__dirname, 'views'));
+// app.set('view engine', 'ejs');
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   // res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
-app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));
+app.use(favicon(join('public', 'images', 'favicon.ico')));
 app.use(morgan('combined', { stream: accessLogStream }));
 app.use(compression());
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(urlencoded({ extended: false }));
 app.use(methodOverride());
 app.use(cookieParser());
 // app.use(express.session());
 // app.use(app.router);
-app.use(lessMiddleware(path.join(__dirname, 'public', 'stylesheets')));
-app.use(express.static(__dirname + '/public'));
+// app.use(lessMiddleware(join(__dirname, 'public', 'stylesheets')));
+// app.use(express.static(__dirname + '/public'));
 
 // development only
 if (process.env.NODE_ENV === 'development') {
@@ -71,10 +75,10 @@ if (process.env.NODE_ENV === 'development') {
 // app.get("*", routes.index);
 // app.get("/users", user.list);
 app.get('/json*', (req, res) => {
-  // console.log("Converting to JSON",req.url);
-  req.url = req.param(0);
+  // console.log('Converting to JSON', req.url, req.params);
+  req.url = req.params[0];
   req.query.f = 'json';
-  json.index(req, res);
+  new JsonResponse(req, res);
   // routes.index(req, res);
 });
 
@@ -86,17 +90,15 @@ app.get('/json*', (req, res) => {
 //   });
 // });
 
-app.get('*', routes.index);
+app.get('*', index);
 // app.use(express.directory( conf.DocumentRoot ));
 // app.use(express.static(conf.DocumentRoot));
 
-// app.use(express.static('public'))
+app.use(express.static('public'));
 
-http.createServer(app).listen(app.get('port'), () => {
+createServer(app).listen(app.get('port'), () => {
   /* server started */
   console.log(
-    ` ## Noche server running ## ${new Date()} ##\n  => http://localhost:${
-      conf.Listen
-    }`
+    ` ## Noche server running ## ${new Date()} ##\n  => http://localhost:${Listen}`
   );
 });
