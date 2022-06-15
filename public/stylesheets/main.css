@@ -1,0 +1,28 @@
+body {
+  margin: 50px;
+  font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
+}
+
+table.directory-indexing td {
+  padding: 0.2em 1ex;
+}
+
+table.directory-indexing td.file-size {
+  text-align: end;
+}
+
+/* Color rules */
+body {
+  background: white;
+  color: #333;
+}
+a {
+  color: #00b7ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #333;
+    color: white;
+  }
+}

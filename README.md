@@ -116,14 +116,14 @@ Currently, Noche is only set up to run as a service on Mac OS X. I plan on expan
 
 ### Basic Running (Any OS)
 
-Simply execute "`$ node server.js`" from within the niche directory and you're up and running. Press `[Ctrl]`+`[c]` to exit it. You could be fancier and launch, output and detach so it stays running in the background by doing like so:
+Simply execute "`$ node server.js`" from within the noche directory and you're up and running. Press `[Ctrl]`+`[c]` to exit it. You could be fancier and launch-and-detach so it stays running in the background like so:
 
 ```
 $ node server.js >> logs/access.log 2>&1 &
 ```
 Now your logs will be in the logs directory, in a file called "access.log".
 
-### Classy Install (Mac OS X)
+### Classy Install (Mac OS X Service)
 
 Included in the Noche package is a **service/** folder. In here you'll find a **com.resourcefork.noche.plist** file. From the command-line, type the following:
 
