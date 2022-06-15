@@ -1,6 +1,6 @@
 import { existsSync, readdir, readFileSync, statSync } from 'fs';
 import { basename, extname, join, normalize } from 'path';
-import conf from '../conf';
+import conf from '../configuration';
 
 // From:
 // http://nodeexamples.com/2012/09/28/getting-a-directory-listing-using-the-fs-module-in-node-js/
@@ -40,7 +40,7 @@ const buildHtmlRow = function ({
 };
 
 export function hasIndex(filename: string): string | false {
-  return existsSync(filename + '/' + conf.DirectoryIndex)
+  return existsSync(join(filename, conf.DirectoryIndex))
     ? conf.DirectoryIndex
     : false;
 }

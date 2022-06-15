@@ -1,6 +1,6 @@
 import { readFile } from 'fs';
 import { Parser } from 'xml2js';
-import conf from '../conf';
+import conf from '../configuration';
 
 // / From:
 // / https://github.com/Leonidas-from-XIV/node-xml2js#options
@@ -34,7 +34,9 @@ export function convertToJson(
         funSuccess({ error }, 406);
       }
     } else {
-      const error = `Error loading "${path}": ${err}`;
+      const error = `Error loading "${path}": ${
+        err?.message || 'unknown error'
+      }`;
       console.log(error);
       funSuccess({ error }, 400);
     }

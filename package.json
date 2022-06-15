@@ -18,8 +18,7 @@
   },
   "main": "server.ts",
   "directories": {
-    "conf": "./conf",
-    "extensions": "./extensions"
+    "conf": "./conf"
   },
   "scripts": {
     "start": "ts-node server.ts",
@@ -54,6 +53,7 @@
     "eslint": "^8.17.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-node": "^0.3.6",
+    "eslint-import-resolver-typescript": "^2.7.1",
     "eslint-plugin-import": "^2.26.0",
     "prettier": "^2.7.0",
     "ts-node": "^10.8.1",

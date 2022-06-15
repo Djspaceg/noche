@@ -2,11 +2,11 @@ import e from 'express';
 import { statSync } from 'fs';
 import { join, normalize } from 'path';
 import { parse } from 'url';
-import conf from '../conf';
+import conf from '../configuration';
 import { getDirectory } from '../extensions/directory-indexing';
 import { convertToJson } from '../extensions/xml2json';
 
-export default class JsonResponse {
+export class JsonResponse {
   req: e.Request;
   res: e.Response;
 
@@ -68,3 +68,5 @@ export default class JsonResponse {
     return this;
   }
 }
+
+export default JsonResponse;

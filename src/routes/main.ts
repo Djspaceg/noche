@@ -2,10 +2,10 @@ import e from 'express';
 import { existsSync, statSync } from 'fs';
 import { join, normalize } from 'path';
 import { parse } from 'url';
-import conf from '../conf';
+import conf from '../configuration';
 import { getDirectory, hasIndex } from '../extensions/directory-indexing';
 
-export function index(request: e.Request, response: e.Response) {
+export function main(request: e.Request, response: e.Response) {
   const objUrl = parse(request.url, true),
     uri = decodeURI(normalize(objUrl.pathname || '')),
     filename = join(conf.DocumentRoot, uri);
@@ -58,3 +58,5 @@ export function index(request: e.Request, response: e.Response) {
     });
   }
 }
+
+export default main;

@@ -18,7 +18,7 @@ export default {
    * Set your server's root level, the lowest level a visitor is allowed to go.
    * And a reminder, all directory names and paths do NOT end in a slash.
    */
-  DocumentRoot: '/Users/stepblk/Source',
+  DocumentRoot: '/Users/<userName>/Source',
 
   DirectoryIndex: 'index.html',
 
