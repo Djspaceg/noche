@@ -1,18 +1,16 @@
-import { parse } from 'url';
-import { normalize, join } from 'path';
+import e from 'express';
 import { statSync } from 'fs';
-import serverConf from '../conf/server.conf.js';
-import { getDirectory } from '../extensions/directory-indexing.js';
-import { get, convertToJson } from '../extensions/xml2json.js';
+import { join, normalize } from 'path';
+import { parse } from 'url';
+import conf from '../conf';
+import { getDirectory } from '../extensions/directory-indexing';
+import { convertToJson } from '../extensions/xml2json';
 
 export default class JsonResponse {
-  res = {};
-  req = {};
+  req: e.Request;
+  res: e.Response;
 
-  sendJson = function (json, status) {
-    if (!status) {
-      status = 200;
-    }
+  sendJson = (json: string | Record<string, any>, status = 200) => {
     // console.log("status: ", status, uri);
     if (typeof json !== 'string') {
       // console.log("resp: ", res, ", status: ", status);
@@ -24,18 +22,18 @@ export default class JsonResponse {
         this.res.status(status).json(json);
       }
     } else {
-      this.res.sendFile(status, json);
+      this.res.status(status).sendFile(json);
     }
     return true;
   };
 
-  constructor(req, res) {
+  constructor(req: e.Request, res: e.Response) {
     this.req = req;
     this.res = res;
 
-    const objUrl = parse(req.url, true),
-      uri = decodeURI(normalize(objUrl.pathname)),
-      filename = join(serverConf.DocumentRoot, uri),
+    const url = parse(req.url, true),
+      uri = decodeURI(normalize(url.pathname || '')),
+      filename = join(conf.DocumentRoot, uri),
       objFileInfo = statSync(filename);
 
     // If it's real, and it's a folder,
@@ -43,18 +41,19 @@ export default class JsonResponse {
       // get a dir index, return true
       getDirectory(
         filename,
-        (objDir) => {
-          if (typeof objDir !== 'string') {
-            objDir = { filesystem: [objDir] };
+        (dirInfo) => {
+          if (typeof dirInfo !== 'string') {
+            this.sendJson({ filesystem: [dirInfo] });
+          } else {
+            this.sendJson(dirInfo);
           }
-          this.sendJson(objDir);
         },
         'json'
       );
       // return true;
     } else {
       try {
-        if (get('Enabled')) {
+        if (conf.xml2json.Enabled) {
           // otherwise, attempt to convert the file to json, return true,
           // console.log("file isn't directory...");
           convertToJson(filename, this.sendJson.bind(this));
@@ -66,6 +65,6 @@ export default class JsonResponse {
       }
     }
     // return false, and likely, try to run something else to get the file, since json didn't work.
-    return true;
+    return this;
   }
 }

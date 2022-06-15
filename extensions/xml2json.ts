@@ -1,17 +1,16 @@
 import { readFile } from 'fs';
 import { Parser } from 'xml2js';
-import * as conf from '../conf/xml2json.conf.js';
+import conf from '../conf';
 
 // / From:
 // / https://github.com/Leonidas-from-XIV/node-xml2js#options
 // /
 
-export function get(strProp) {
-  return conf[strProp];
-}
-
-export function convertToJson(path, funSuccess) {
-  const parser = new Parser(conf.Options);
+export function convertToJson(
+  path: string,
+  funSuccess: (status: any, statusCode?: number) => void
+) {
+  const parser = new Parser(conf.xml2json.Options);
 
   parser.on('end', (result) => {
     if (funSuccess) {
@@ -22,7 +21,7 @@ export function convertToJson(path, funSuccess) {
   readFile(path, (err, data) => {
     if (!err && data) {
       try {
-        if (data.asciiSlice(0, 1) === '<') {
+        if (data.slice(0, 1).toString() === '<') {
           // File is XML-ish
           parser.parseString(data);
         } else {

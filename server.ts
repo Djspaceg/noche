@@ -11,11 +11,11 @@ import favicon from 'serve-favicon';
 // import ejs from 'ejs';
 import { createWriteStream } from 'fs';
 // import lessMiddleware from 'less-middleware';
-import { index } from './routes/index.js';
+import { index } from './routes';
 // user = require('./routes/user'),
 // import { fileURLToPath } from 'url';
-import serverConf from './conf/server.conf.js';
-import JsonResponse from './routes/json.js';
+import conf from './conf';
+import JsonResponse from './routes/json';
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
@@ -29,7 +29,7 @@ const app = express();
 //   path: path.join(__dirname, 'log'),
 // });
 // create a write stream (in append mode)
-var accessLogStream = createWriteStream(join('access.log'), {
+const accessLogStream = createWriteStream(join('access.log'), {
   flags: 'a',
 });
 
@@ -37,8 +37,8 @@ var accessLogStream = createWriteStream(join('access.log'), {
 // console.log("__dirname: ", __dirname);
 
 // all environments
-app.set('title', serverConf.ServerName || 'Noche Server');
-app.set('port', process.env.PORT || parseInt(serverConf.Listen) || 8888);
+app.set('title', conf.ServerName || 'Noche Server');
+app.set('port', parseInt(process.env.PORT || '') || conf.Listen || 8888);
 // app.set('views', join(__dirname, 'views'));
 // app.set('view engine', 'ejs');
 app.use((req, res, next) => {
@@ -70,7 +70,8 @@ if (process.env.NODE_ENV === 'development') {
 // app.get("/users", user.list);
 app.get('/json*', (req, res) => {
   // console.log('Converting to JSON', req.url, req.params);
-  req.url = req.params[0];
+  const params: Record<string, string> = req.params;
+  req.url = params[0];
   req.query.f = 'json';
   new JsonResponse(req, res);
   // routes.index(req, res);

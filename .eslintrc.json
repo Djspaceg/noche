@@ -1,21 +1,29 @@
 {
   "env": {
-    "es6": true,
-    "node": true,
-    "commonjs": false
+    "browser": true,
+    "es2021": true
   },
-  "extends": ["eslint:recommended", "plugin:import/recommended"],
-  "plugins": ["import"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": "latest",
-    "sourceType": "module",
-    "ecmaFeatures": {
-      "jsx": true
+    "sourceType": "module"
+  },
+  "plugins": ["@typescript-eslint"],
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".ts"]
+      }
     }
   },
   "rules": {
     "import/no-unresolved": 2,
-    "import/no-commonjs": 2,
-    "import/extensions": [2, "ignorePackages"]
+    "import/no-commonjs": 2
   }
 }
