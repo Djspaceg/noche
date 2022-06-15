@@ -1,6 +1,7 @@
 import { existsSync, readdir, readFileSync, statSync } from 'fs';
 import { basename, extname, join, normalize } from 'path';
 import conf from '../configuration';
+import { humanFileSize } from '../util';
 
 // From:
 // http://nodeexamples.com/2012/09/28/getting-a-directory-listing-using-the-fs-module-in-node-js/
@@ -34,7 +35,7 @@ const buildHtmlRow = function ({
       ${name}${isDir ? '/' + (hasIndex || '') : ''}
     </a>
   </td>
-  <td class="file-size">${size}</td>
+  <td class="file-size">${humanFileSize(size)}</td>
   <td class="file-date">${toIsoTimeString(mtime)}</td>
 </tr>`;
 };

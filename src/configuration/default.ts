@@ -8,7 +8,7 @@
  */
 
 export default {
-  ServerName: 'Noche Media Server',
+  ServerName: 'Noche Server',
 
   Listen: 8888,
 

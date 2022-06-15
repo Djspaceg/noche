@@ -1,39 +1,42 @@
 import e from 'express';
 import { existsSync, statSync } from 'fs';
+import { OutgoingHttpHeader, OutgoingHttpHeaders } from 'http';
 import { join, normalize } from 'path';
 import { parse } from 'url';
 import conf from '../configuration';
 import { getDirectory, hasIndex } from '../extensions/directory-indexing';
 
-export function main(request: e.Request, response: e.Response) {
-  const objUrl = parse(request.url, true),
-    uri = decodeURI(normalize(objUrl.pathname || '')),
-    filename = join(conf.DocumentRoot, uri);
+const isServable = function (filePath: string) {
+  const fileExists = existsSync(filePath);
+  if (!fileExists) {
+    return false;
+  }
+  const rawStats = statSync(filePath);
+  if (rawStats.isDirectory()) {
+    return 'maybe';
+  }
+  return true;
+};
 
-  // console.log("Running index.js because of",request.url);
+export function main(req: e.Request, res: e.Response) {
+  const objUrl = parse(req.url, true);
+  const uri = decodeURI(normalize(objUrl.pathname || ''));
+  const filename = join(conf.DocumentRoot, uri);
+
+  // console.log("Running index.js because of",req.url);
+
+  type Headers = Parameters<e.Response['writeHead']>[1];
 
   const writeEntireResponse = function (
     strContent = '',
-    intStatus = 200,
-    objOptions: Record<string, string> = {
+    statusCode = 200,
+    headers: Headers = {
       'Content-Type': conf.DefaultContentType,
     }
   ) {
-    response.writeHead(intStatus, objOptions);
-    response.write(strContent, 'binary');
-    response.end();
-  };
-
-  const isServable = function (filePath: string) {
-    const fileExists = existsSync(filePath);
-    if (!fileExists) {
-      return false;
-    }
-    const rawStats = statSync(filePath);
-    if (rawStats.isDirectory()) {
-      return 'maybe';
-    }
-    return true;
+    res.writeHead(statusCode, headers);
+    res.write(strContent, 'binary');
+    res.end();
   };
 
   const bitIsServable = isServable(filename);
@@ -41,16 +44,20 @@ export function main(request: e.Request, response: e.Response) {
     if (bitIsServable === 'maybe') {
       const bitHasIndex = hasIndex(filename);
       if (bitHasIndex) {
-        response.sendFile(filename);
+        res.sendFile(filename);
       } else {
         getDirectory(filename, (files) => {
           if (typeof files === 'string') {
-            writeEntireResponse(files);
+            // writeEntireResponse(files);
+            res.render('index', {
+              title: conf.ServerName,
+              directoryIndex: files,
+            });
           }
         });
       }
     } else {
-      response.sendFile(filename);
+      res.sendFile(filename);
     }
   } else {
     writeEntireResponse('404 Not Found\n' + uri, 404, {
