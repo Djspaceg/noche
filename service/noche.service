@@ -1,0 +1,21 @@
+[Unit]
+Description=Noche web server
+Documentation=https://github.com/Djspaceg/noche
+After=network.target
+
+[Service]
+# Environment=NODE_PORT=3001
+Type=simple
+User=stepblk
+Group=nobody
+WorkingDirectory=/home/stepblk/source/noche
+ExecStart=/apollo/env/NodeJS/bin/npm --scripts-prepend-node-path /apollo/env/NodeJS/bin/ run start
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
+# Examples:
+# https://nodesource.com/blog/running-your-node-js-app-with-systemd-part-1/
+# https://www.suse.com/support/kb/doc/?id=000019672
+# https://www.freedesktop.org/software/systemd/man/systemd.unit.html#Specifiers
