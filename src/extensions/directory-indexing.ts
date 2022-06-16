@@ -1,7 +1,7 @@
 import { existsSync, readdir, readFileSync, statSync } from 'fs';
 import { basename, extname, join, normalize } from 'path';
 import conf from '../configuration';
-import { humanFileSize } from '../util';
+import { humanFileSize, readableDuration } from '../util';
 
 // From:
 // http://nodeexamples.com/2012/09/28/getting-a-directory-listing-using-the-fs-module-in-node-js/
@@ -21,6 +21,18 @@ const toIsoTimeString = function (date = new Date()): string {
   return `${y}-${zeroPad(m)}-${zeroPad(d)}`;
 };
 
+const readableDate = (date: Date): string => {
+  if (conf.directoryIndexing.RelativeDates) {
+    return readableDuration(Date.now() - date.getTime(), {
+      base: 'millisecond',
+      limit: 1,
+      relative: true,
+    });
+  } else {
+    return toIsoTimeString(date);
+  }
+};
+
 const buildHtmlRow = function ({
   name,
   path,
@@ -36,7 +48,7 @@ const buildHtmlRow = function ({
     </a>
   </td>
   <td class="file-size">${humanFileSize(size)}</td>
-  <td class="file-date">${toIsoTimeString(mtime)}</td>
+  <td class="file-date">${readableDate(mtime)}</td>
 </tr>`;
 };
 

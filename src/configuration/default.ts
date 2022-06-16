@@ -61,6 +61,9 @@ export default {
      */
     // MediaMetadataThumbnailExtension: ".tbn",
     MediaMetadataThumbnailExtension: ['.tbn', '-poster.jpg'],
+
+    /** Use relative dates (true) or static absolute dates (false) */
+    RelativeDates: true,
   },
 
   /** XML to JSON Extension Configuration */
