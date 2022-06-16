@@ -2,9 +2,30 @@ body {
   margin: 50px;
   font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
 }
+a:link,
+a:visited {
+  text-decoration: none;
+}
+a:hover,
+a:active {
+  text-decoration: underline;
+}
+
+table.directory-indexing tr:nth-child(even) td {
+  background-color: rgba(0, 0, 0, 0.1);
+}
 
 table.directory-indexing td {
-  padding: 0.2em 1ex;
+  padding: 0.5em 1ex;
+}
+
+table.directory-indexing td.file-name {
+  padding: 0;
+}
+
+table.directory-indexing td.file-name a {
+  display: block;
+  padding: 0.5em 1ex;
 }
 
 table.directory-indexing td.file-size {

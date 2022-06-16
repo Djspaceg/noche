@@ -120,7 +120,9 @@ export function getDirectory(
 
     if (format === 'html') {
       strOut += getFile(conf.directoryIndexing.HeaderFilename);
-      strOut += '<table class="directory-indexing">';
+
+      strOut +=
+        '<table class="directory-indexing" cellspacing="0" cellpadding="0">';
     }
 
     if (
