@@ -17,7 +17,7 @@ const getClosestMatchingDirectory = function (filePath: string): string {
 const isServable = function (filePath: string) {
   const fileExists = existsSync(filePath);
   if (!fileExists) {
-    const nearestPath = getClosestMatchingDirectory(filePath);
+    const nearestPath = getClosestMatchingDirectory(filePath) + path.sep;
     if (nearestPath) {
       console.log(
         `File "${filePath}" not found. Nearest resolvable path to be used is "${nearestPath}".`
