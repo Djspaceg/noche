@@ -1,4 +1,4 @@
-import { readFile } from 'fs';
+import { readFileSync } from 'fs';
 import { Parser } from 'xml2js';
 import conf from '../configuration';
 
@@ -6,40 +6,39 @@ import conf from '../configuration';
 // / https://github.com/Leonidas-from-XIV/node-xml2js#options
 // /
 
+type ConversionSuccess = Record<string, unknown>;
+type ConversionError = Error | null;
+
 export function convertToJson(
   path: string,
-  funSuccess: (status: any, statusCode?: number) => void
+  cb: (
+    status: ConversionSuccess | ConversionError,
+    statusCode?: number,
+  ) => void,
 ) {
   const parser = new Parser(conf.xml2json.Options);
 
-  parser.on('end', (result) => {
-    if (funSuccess) {
-      funSuccess(result);
-    }
-  });
-
-  readFile(path, (err, data) => {
-    if (!err && data) {
-      try {
-        if (data.slice(0, 1).toString() === '<') {
-          // File is XML-ish
-          parser.parseString(data);
-        } else {
-          // File is already JSON
-          funSuccess(JSON.parse(data.toString()));
-        }
-      } catch {
-        const error = `Converting "${path}" but it does not appear to be XML.`;
-        console.log(error);
-        funSuccess({ error }, 406);
+  try {
+    const value = readFileSync(path);
+    try {
+      if (value.slice(0, 1).toString() === '<') {
+        // File is XML-ish
+        parser.parseString(value, cb);
+      } else {
+        // File is already JSON
+        return cb(JSON.parse(value.toString()) as ConversionSuccess);
       }
-    } else {
-      const error = `Error loading "${path}": ${
-        err?.message || 'unknown error'
-      }`;
-      console.log(error);
-      funSuccess({ error }, 400);
+    } catch (err) {
+      const error = `Converting "${path}" but it does not appear to be XML.`;
+      console.log(error, err);
+      return cb({ error }, 406);
     }
-  });
-  return true;
+  } catch (err) {
+    const reason = err as Error;
+    const error = `Error loading "${path}": ${
+      reason?.message || 'unknown error'
+    }`;
+    console.log(error);
+    return cb({ error }, 400);
+  }
 }

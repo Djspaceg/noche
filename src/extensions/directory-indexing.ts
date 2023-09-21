@@ -2,6 +2,7 @@ import { existsSync, readdir, readFileSync, statSync } from 'fs';
 import { basename, extname, join, normalize } from 'path';
 import conf from '../configuration';
 import { humanFileSize, readableDuration } from '../util';
+import { convertToJson } from './xml2json';
 
 // From:
 // http://nodeexamples.com/2012/09/28/getting-a-directory-listing-using-the-fs-module-in-node-js/
@@ -52,10 +53,27 @@ const buildHtmlRow = function ({
 </tr>`;
 };
 
-export function hasIndex(filename: string): string | false {
-  return existsSync(join(filename, conf.DirectoryIndex))
-    ? conf.DirectoryIndex
-    : false;
+export function hasIndex(path: string): string | false {
+  const filename = join(path, conf.DirectoryIndex);
+  if (!existsSync(filename)) {
+    return false;
+  }
+  let title = '';
+  let fileJson;
+  convertToJson(filename, (err, json) => {
+    if (err) {
+      console.log('JSON conversion error on %s: %s', filename, err);
+    }
+    fileJson = json;
+  });
+
+  if (fileJson && !('error' in fileJson)) {
+    const htmlJson = fileJson as { html?: { head?: { title?: string } } };
+    // console.log('fileJson: ', fileJson, 'title:', htmlJson?.html?.head?.title);
+    title = htmlJson?.html?.head?.title || '';
+  }
+
+  return title || conf.DirectoryIndex;
 }
 
 export function hasMedia(filename: string): string | false {
@@ -108,7 +126,7 @@ type DirectoryInfo = {
 export function getDirectory(
   p: string,
   funIn: (info: string | DirectoryInfo) => void,
-  format = 'html'
+  format = 'html',
 ) {
   p = normalize(p);
   readdir(p, (err, files) => {
@@ -119,6 +137,7 @@ export function getDirectory(
     }
 
     if (format === 'html') {
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       strOut += getFile(conf.directoryIndexing.HeaderFilename);
 
       strOut +=
@@ -173,6 +192,7 @@ export function getDirectory(
 
     if (format === 'html') {
       strOut += '</table>';
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       strOut += getFile(conf.directoryIndexing.FooterFilename);
       funIn(strOut);
       return;

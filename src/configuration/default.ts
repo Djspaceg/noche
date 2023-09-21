@@ -78,6 +78,9 @@ export default {
     Options: {
       trim: true,
       explicitArray: false,
+      strict: false,
+      normalize: true,
+      normalizeTags: true,
     },
   },
 };

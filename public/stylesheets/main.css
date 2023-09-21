@@ -11,12 +11,24 @@ a:active {
   text-decoration: underline;
 }
 
+table.directory-indexing {
+  min-width: 70%;
+}
+
+table.directory-indexing td {
+  padding: 1em;
+}
+
 table.directory-indexing tr:nth-child(even) td {
   background-color: rgba(0, 0, 0, 0.1);
 }
 
-table.directory-indexing td {
-  padding: 0.5em 1ex;
+table.directory-indexing tr:nth-child(even) td:first-child {
+  border-radius: 999px 0 0 999px;
+}
+
+table.directory-indexing tr:nth-child(even) td:last-child {
+  border-radius: 0 999px 999px 0;
 }
 
 table.directory-indexing td.file-name {
@@ -25,7 +37,10 @@ table.directory-indexing td.file-name {
 
 table.directory-indexing td.file-name a {
   display: block;
-  padding: 0.5em 1ex;
+  padding: 1em 2em;
+  font-size: 120%;
+  letter-spacing: 0.1ex;
+  font-family: 'Amazon Ember';
 }
 
 table.directory-indexing td.file-size {

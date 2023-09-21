@@ -9,7 +9,7 @@ Type=simple
 User=stepblk
 Group=nobody
 WorkingDirectory=/home/stepblk/source/noche
-ExecStart=/apollo/env/NodeJS/bin/npm --scripts-prepend-node-path /apollo/env/NodeJS/bin/ run start
+ExecStart=/apollo/env/NodeJS/bin/npm run start
 Restart=on-failure
 
 [Install]
